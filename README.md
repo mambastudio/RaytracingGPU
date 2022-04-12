@@ -1,6 +1,8 @@
 # RaytracingGPU
 Simple OpenCL ray tracer targeting GPU.
 
+![Screenshot](Screenshot.png)
+
 Objective of this project is to:
 - Make it simple as possible for debugging purpose and experimental applications like;
   - Accelerating structures (bvh), 
