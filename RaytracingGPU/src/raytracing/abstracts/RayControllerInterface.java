@@ -17,7 +17,7 @@ import javafx.fxml.Initializable;
  * @param <A>
  * @param <M>
  */
-public interface RenderControllerInterface<A extends MambaAPIInterface, M extends MaterialInterface> extends Initializable {
+public interface RayControllerInterface<A extends RayAPI, M extends RayMaterial> extends Initializable {
     public enum PrintType {
         PROGRESS,
         ERROR

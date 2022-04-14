@@ -26,9 +26,9 @@ import wrapper.core.OpenCLConfiguration;
  * @param <I>
  * @param <M>
  */
-public interface MambaAPIInterface <
-        M extends MaterialInterface, 
-        I extends RenderControllerInterface>
+public interface RayAPI <
+        M extends RayMaterial, 
+        I extends RayControllerInterface>
 {
     enum ImageType{
         RAYTRACE_IMAGE, 
@@ -126,7 +126,7 @@ public interface MambaAPIInterface <
         return supplier.get();
     }
     
-    default LightManager getLightManager()
+    default RayLight getLightManager()
     {
         return null;
     }

@@ -15,7 +15,7 @@ import javafx.scene.image.Image;
  * @author user
  * @param <M>
  */
-public interface MaterialInterface <M extends MaterialInterface> {    
+public interface RayMaterial <M extends RayMaterial> {    
     public enum BRDFType{
         DIFFUSE, 
         ANISOTROPIC,

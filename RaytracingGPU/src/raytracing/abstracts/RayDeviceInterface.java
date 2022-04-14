@@ -26,9 +26,9 @@ import coordinate.model.CameraModel;
  * @param <CD>
  */
 public interface RayDeviceInterface <
-        A       extends MambaAPIInterface, 
+        A       extends RayAPI, 
         D       extends AbstractDisplay, 
-        M       extends MaterialInterface, 
+        M       extends RayMaterial, 
         MS      extends AbstractMesh,
         AC      extends AbstractAccelerator,
         BB      extends AbstractBound,

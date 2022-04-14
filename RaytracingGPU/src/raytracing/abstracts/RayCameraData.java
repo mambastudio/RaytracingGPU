@@ -9,10 +9,6 @@ package raytracing.abstracts;
  *
  * @author user
  */
-public interface LightManager {
-    public int getLightCount();
-    public boolean hasInfiniteLight();
-    public boolean hasAreaLight();
-    public boolean initLight();
+public interface RayCameraData {
     
 }
