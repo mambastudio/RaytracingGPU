@@ -3,40 +3,59 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package raytracing.data;
+package raytracing.coordinates;
 
 import coordinate.generic.SCoord;
 import coordinate.struct.structfloat.FloatStruct;
+import java.util.Arrays;
+
 
 /**
  *
  * @author user
+ * 
+ * This is only used for mesh data only, OpenCL handles data differently.
+ * 
  */
-public class RPoint4 extends FloatStruct implements SCoord<RPoint4, RVector4>{
-    public float x, y, z, w;
-    
-    public RPoint4(){
+public class RPoint3 extends FloatStruct implements SCoord<RPoint3, RVector3>{
+public float x, y, z, w;
+    public RPoint3(){
         super();
     }
 
-    public RPoint4(float x, float y, float z, float w) {
+    public RPoint3(float x, float y, float z) {
         this.x = x;
         this.y = y;
         this.z = z;
-        this.w = w;
     }
 
-    public RPoint4(RPoint4 p) {
+    public RPoint3(RPoint3 p) {
         x = p.x;
         y = p.y;
         z = p.z;
-        z = p.w;
     }
                 
+    public static final RVector3 sub(RPoint3 p1, RPoint3 p2) 
+    {
+        RVector3 dest = new RVector3();
+        dest.x = p1.x - p2.x;
+        dest.y = p1.y - p2.y;
+        dest.z = p1.z - p2.z;
+        return dest;
+    }
+
+    public static final RPoint3 mid(RPoint3 p1, RPoint3 p2) 
+    {
+        RPoint3 dest = new RPoint3();
+        dest.x = 0.5f * (p1.x + p2.x);
+        dest.y = 0.5f * (p1.y + p2.y);
+        dest.z = 0.5f * (p1.z + p2.z);
+        return dest;
+    }
     
-       
-    public RPoint4 setValue(float x, float y, float z, float w) {
-        RPoint4 p = SCoord.super.setValue(x, y, z);
+   
+    public RPoint3 setValue(float x, float y, float z) {
+        RPoint3 p = SCoord.super.setValue(x, y, z);
         this.refreshGlobalArray();
         return p;
     }
@@ -49,15 +68,14 @@ public class RPoint4 extends FloatStruct implements SCoord<RPoint4, RVector4>{
 
     @Override
     public float[] getArray() {
-        return new float[]{x, y, z, w};
+        return new float[]{x, y, z, 0};
     }
 
     @Override
-    public void set(float... values) {
+    public void set(float... values) {        
         x = values[0];
         y = values[1];
         z = values[2];
-        w = values[3];
     }
 
     @Override
@@ -69,8 +87,6 @@ public class RPoint4 extends FloatStruct implements SCoord<RPoint4, RVector4>{
                 return y;
             case 'z':
                 return z;
-            case 'w':
-                return w;
             default:
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.  
         }
@@ -88,27 +104,24 @@ public class RPoint4 extends FloatStruct implements SCoord<RPoint4, RVector4>{
             case 'z':
                 z = value;
                 break;
-            case 'w':
-                w = value;
-                break;
             default:
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
 
     @Override
-    public RPoint4 copy() {
-        return new RPoint4(x, y, z, w);
+    public RPoint3 copy() {
+        return new RPoint3(x, y, z);
     }
 
     @Override
-    public RPoint4 getSCoordInstance() {
-        return new RPoint4();
+    public RPoint3 getSCoordInstance() {
+        return new RPoint3();
     }
 
     @Override
-    public RVector4 getVCoordInstance() {
-        return new RVector4();
+    public RVector3 getVCoordInstance() {
+        return new RVector3();
     }
     
     @Override
@@ -124,9 +137,6 @@ public class RPoint4 extends FloatStruct implements SCoord<RPoint4, RVector4>{
             case 2:
                 z = value;
                 break;
-            case 3:
-                w = value;
-                break;
         }
     }
         
@@ -134,7 +144,7 @@ public class RPoint4 extends FloatStruct implements SCoord<RPoint4, RVector4>{
     public String toString()
     {
         float[] array = getArray();
-        return String.format("(%3.2f, %3.2f, %3.2f, %3.2f)", array[0], array[1], array[2], array[3]);
+        return String.format("(%3.2f, %3.2f, %3.2f)", array[0], array[1], array[2]);
     }
 
     @Override

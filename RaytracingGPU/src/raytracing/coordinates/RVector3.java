@@ -3,40 +3,47 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package raytracing.data;
+package raytracing.coordinates;
 
-import coordinate.generic.AbstractCoordinateInteger;
-import coordinate.struct.structint.IntStruct;
+import coordinate.generic.VCoord;
+import coordinate.struct.structfloat.FloatStruct;
 
 /**
  *
  * @author user
  */
-public class RInt3 extends IntStruct implements AbstractCoordinateInteger
-{
-    public int x, y, z;
+public class RVector3 extends FloatStruct implements VCoord<RVector3>{
+    public float x, y, z;
     
-    public RInt3()
-    {
-        x = y = z = 0;
+    public RVector3(){}
+    public RVector3(float x, float y, float z){this.x = x; this.y = y; this.z = z;};
+    public RVector3(RVector3 v) {this.x = v.x; this.y = v.y; this.z = v.z;}
+        
+    @Override
+    public RVector3 getCoordInstance() {
+        return new RVector3();
     }
 
     @Override
-    public int get(char axis) {
+    public RVector3 copy() {
+        return new RVector3(x, y, z);
+    }
+
+    @Override
+    public float get(char axis) {
         switch (axis) {
             case 'x':
                 return x;
             case 'y':
                 return y;
             case 'z':
-                return z;           
+                return z;
             default:
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.  
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.            
         }
     }
 
-    @Override
-    public void set(char axis, int value) {
+    public void set(char axis, float value) {
         switch (axis) {
             case 'x':
                 x = value;
@@ -46,21 +53,21 @@ public class RInt3 extends IntStruct implements AbstractCoordinateInteger
                 break;
             case 'z':
                 z = value;
-                break;            
+                break;
             default:
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
 
     @Override
-    public void set(int... values) {
+    public void set(float... values) {        
         x = values[0];
         y = values[1];
-        z = values[2];        
+        z = values[2];
     }
 
     @Override
-    public void setIndex(int index, int value) {
+    public void setIndex(int index, float value) {
         switch (index)
         {
             case 0:
@@ -71,9 +78,7 @@ public class RInt3 extends IntStruct implements AbstractCoordinateInteger
                 break;    
             case 2:
                 z = value;
-                break;            
-            default:
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                break;
         }
     }
 
@@ -83,8 +88,15 @@ public class RInt3 extends IntStruct implements AbstractCoordinateInteger
     }
 
     @Override
-    public int[] getArray() {
-        return new int[]{x, y, z, 0};
+    public float[] getArray() {
+        return new float[]{x, y, z, 0};
+    }
+      
+    @Override
+    public String toString()
+    {
+        float[] array = getArray();
+        return String.format("(%8.2f, %8.2f, %8.2f)", array[0], array[1], array[2]);
     }
 
     @Override

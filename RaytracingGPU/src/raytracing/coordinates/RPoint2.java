@@ -3,30 +3,43 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package raytracing.data;
+package raytracing.coordinates;
 
-import coordinate.generic.VCoord;
+import coordinate.generic.AbstractCoordinateFloat;
 import coordinate.struct.structfloat.FloatStruct;
+import coordinate.utility.Value2Di;
 
 /**
  *
  * @author user
  */
-public class RVector3 extends FloatStruct implements VCoord<RVector3>{
-    public float x, y, z;
+public class RPoint2 extends FloatStruct implements AbstractCoordinateFloat
+{
+    public float x, y;
     
-    public RVector3(){}
-    public RVector3(float x, float y, float z){this.x = x; this.y = y; this.z = z;};
-    public RVector3(RVector3 v) {this.x = v.x; this.y = v.y; this.z = v.z;}
-        
-    @Override
-    public RVector3 getCoordInstance() {
-        return new RVector3();
+    public RPoint2() {
+        super();
+    }
+
+    public RPoint2(float x, float y) {
+        this.x = x;
+        this.y = y;        
+    }
+    
+    public RPoint2(Value2Di value)
+    {
+        this.x = value.x;
+        this.y = value.y;
     }
 
     @Override
-    public RVector3 copy() {
-        return new RVector3(x, y, z);
+    public int getSize() {
+        return 2;
+    }
+
+    @Override
+    public float[] getArray() {
+        return new float[]{x, y};
     }
 
     @Override
@@ -36,13 +49,12 @@ public class RVector3 extends FloatStruct implements VCoord<RVector3>{
                 return x;
             case 'y':
                 return y;
-            case 'z':
-                return z;
             default:
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.            
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.  
         }
     }
 
+    @Override
     public void set(char axis, float value) {
         switch (axis) {
             case 'x':
@@ -51,19 +63,15 @@ public class RVector3 extends FloatStruct implements VCoord<RVector3>{
             case 'y':
                 y = value;
                 break;
-            case 'z':
-                z = value;
-                break;
             default:
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
 
     @Override
-    public void set(float... values) {        
+    public void set(float... values) {
         x = values[0];
         y = values[1];
-        z = values[2];
     }
 
     @Override
@@ -75,28 +83,14 @@ public class RVector3 extends FloatStruct implements VCoord<RVector3>{
                 break;
             case 1:
                 y = value;
-                break;    
-            case 2:
-                z = value;
-                break;
+                break;                
         }
-    }
-
-    @Override
-    public int getSize() {
-        return 4;
-    }
-
-    @Override
-    public float[] getArray() {
-        return new float[]{x, y, z, 0};
-    }
-      
+    }    
     @Override
     public String toString()
     {
         float[] array = getArray();
-        return String.format("(%8.2f, %8.2f, %8.2f)", array[0], array[1], array[2]);
+        return String.format("(%3.2f, %3.2f)", array[0], array[1]);
     }
 
     @Override

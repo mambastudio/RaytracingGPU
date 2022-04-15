@@ -3,59 +3,40 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package raytracing.data;
+package raytracing.coordinates;
 
-import coordinate.generic.AbstractCoordinateFloat;
-import coordinate.struct.structfloat.FloatStruct;
-import coordinate.utility.Value2Di;
+import coordinate.generic.AbstractCoordinateInteger;
+import coordinate.struct.structint.IntStruct;
 
 /**
  *
  * @author user
  */
-public class RPoint2 extends FloatStruct implements AbstractCoordinateFloat
+public class RInt3 extends IntStruct implements AbstractCoordinateInteger
 {
-    public float x, y;
+    public int x, y, z;
     
-    public RPoint2() {
-        super();
-    }
-
-    public RPoint2(float x, float y) {
-        this.x = x;
-        this.y = y;        
-    }
-    
-    public RPoint2(Value2Di value)
+    public RInt3()
     {
-        this.x = value.x;
-        this.y = value.y;
+        x = y = z = 0;
     }
 
     @Override
-    public int getSize() {
-        return 2;
-    }
-
-    @Override
-    public float[] getArray() {
-        return new float[]{x, y};
-    }
-
-    @Override
-    public float get(char axis) {
+    public int get(char axis) {
         switch (axis) {
             case 'x':
                 return x;
             case 'y':
                 return y;
+            case 'z':
+                return z;           
             default:
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.  
         }
     }
 
     @Override
-    public void set(char axis, float value) {
+    public void set(char axis, int value) {
         switch (axis) {
             case 'x':
                 x = value;
@@ -63,19 +44,23 @@ public class RPoint2 extends FloatStruct implements AbstractCoordinateFloat
             case 'y':
                 y = value;
                 break;
+            case 'z':
+                z = value;
+                break;            
             default:
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
 
     @Override
-    public void set(float... values) {
+    public void set(int... values) {
         x = values[0];
         y = values[1];
+        z = values[2];        
     }
 
     @Override
-    public void setIndex(int index, float value) {
+    public void setIndex(int index, int value) {
         switch (index)
         {
             case 0:
@@ -83,14 +68,23 @@ public class RPoint2 extends FloatStruct implements AbstractCoordinateFloat
                 break;
             case 1:
                 y = value;
-                break;                
+                break;    
+            case 2:
+                z = value;
+                break;            
+            default:
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-    }    
+    }
+
     @Override
-    public String toString()
-    {
-        float[] array = getArray();
-        return String.format("(%3.2f, %3.2f)", array[0], array[1]);
+    public int getSize() {
+        return 4;
+    }
+
+    @Override
+    public int[] getArray() {
+        return new int[]{x, y, z, 0};
     }
 
     @Override
