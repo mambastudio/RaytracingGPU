@@ -9,12 +9,15 @@ package raytracing.device;
 import raytracing.accelerator.RNormalBVH;
 import bitmap.image.BitmapARGB;
 import coordinate.model.OrientationModel;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.application.Platform;
 import raytracing.display.BlendDisplay;
 import raytracing.display.Overlay;
 import raytracing.RaytraceAPI;
-import raytracing.RaytraceEnvironment;
+import raytracing.envmap.REnvMap;
 import static raytracing.abstracts.RayAPI.ImageType.RAYTRACE_IMAGE;
 import static raytracing.abstracts.RayAPI.getGlobal;
 import raytracing.abstracts.RayDeviceInterface;
@@ -27,6 +30,7 @@ import raytracing.structs.RBound;
 import raytracing.structs.RBsdf;
 import raytracing.structs.RCamera;
 import raytracing.structs.RCameraModel;
+import raytracing.structs.RConfig;
 import raytracing.structs.RIntersection;
 import raytracing.structs.RMaterial;
 import raytracing.structs.RRay;
@@ -73,14 +77,18 @@ public class RaytraceDevice implements RayDeviceInterface<
     
     private final int width;
     private final int height;
-    private final BitmapARGB raytraceBitmap;
-    private final Overlay overlay;
+    private BitmapARGB raytraceBitmap;
+    private Overlay overlay;
     
     //global and local size
     int globalWorkSize, localWorkSize;
     
     //priority bound, that is the main focus for the ray trace (e.g. selected object)
     RBound priorityBound;
+    
+    //4,194,304 (2048 x 2048)
+    //64 local size
+    int maxGlobalSize = 4194304;
     
     //CL
     CMemory<IntValue> imageBuffer = null;      
@@ -106,12 +114,15 @@ public class RaytraceDevice implements RayDeviceInterface<
     RTextureApplyPass texApplyPass = null;
     
     //environment map if any
-    RaytraceEnvironment envmap = null;
+    REnvMap envmap = null;
     
     //on screen intersection mouse click
     CMemory<IntValue> groupIndex = null;  
     CMemory<FloatValue> groupBound = null;
     CKernel findBoundKernel = null;
+    
+    //queue ray trace
+    private final Queue<MethodWrapper> traceQueue = new LinkedBlockingQueue();
     
     public RaytraceDevice(int w, int h)
     {
@@ -127,6 +138,12 @@ public class RaytraceDevice implements RayDeviceInterface<
     public void setAPI(RaytraceAPI api) {
         this.api = api;
         init(api.getConfigurationCL(), api.getDisplay(BlendDisplay.class));
+    }
+    
+    private void initImages(RConfig configRay)
+    {
+        raytraceBitmap  = new BitmapARGB(configRay.resolutionR.x, configRay.resolutionR.y);
+        overlay         = new Overlay(configRay.resolutionR.x, configRay.resolutionR.y);
     }
     
     public void initBuffers()
@@ -223,7 +240,7 @@ public class RaytraceDevice implements RayDeviceInterface<
         raytraceBitmap.writeColor((int[]) imageBuffer.getBufferArray(), 0, 0, width, height);
         overlay.copyToArray((int[])groupBuffer.getBufferArray());
         //image fill
-        Platform.runLater(()-> display.imageFill(RAYTRACE_IMAGE.name(), raytraceBitmap));
+        display.imageFill(RAYTRACE_IMAGE.name(), raytraceBitmap);
         
     }
 
@@ -233,6 +250,11 @@ public class RaytraceDevice implements RayDeviceInterface<
         this.bvh = bvhBuild;        
         this.priorityBound = bvhBuild.getBound();
     }
+    
+    @Override
+    public void setPriorityBound(RBound priorityBound){
+        this.priorityBound = priorityBound;
+    };
 
     @Override
     public void setGlobalSize(int globalSize) {
@@ -245,7 +267,7 @@ public class RaytraceDevice implements RayDeviceInterface<
     }
 
     @Override
-    public void execute() {        
+    public void execute(RConfig configRay) {        
         if(cameraModel.isSynched(cameraBuffer.get(0)))
             raytraceThread.chill();       
         updateCamera();
@@ -292,9 +314,16 @@ public class RaytraceDevice implements RayDeviceInterface<
     public void stop() {
         raytraceThread.stopExecution();
     }
+    
+    //add method call for raytracing
+    private void addQueue(RConfig configRay)
+    {
+        traceQueue.add(new MethodWrapper(configRay));
+    }
 
     @Override
-    public void resume() {
+    public void resume(RConfig configRay) {
+        addQueue(configRay);        
         raytraceThread.resumeExecution();
     }
 
@@ -347,7 +376,8 @@ public class RaytraceDevice implements RayDeviceInterface<
         this.display = display;
         this.envmap = api.getEnvironmentalMapCL();
         initBuffers();
-        initKernels();        
+        initKernels();  
+        addQueue(api.getRayConfiguration());
     }
     
     public void reposition(RBound box)
@@ -370,7 +400,9 @@ public class RaytraceDevice implements RayDeviceInterface<
     public void start()
     {     
        raytraceThread.startExecution(()-> {
-            execute();
+            while(!traceQueue.isEmpty())
+               traceQueue.poll().invoke();
+            
             raytraceThread.pauseExecution();       
         });      
     }
@@ -378,6 +410,20 @@ public class RaytraceDevice implements RayDeviceInterface<
     public void setShadeType(ShadeType shadeType)
     {
         this.shadeType = shadeType;
-        this.resume();
+        this.resume(api.getRayConfiguration());
+    }
+    
+    //method wrapper for raytracing code
+    private class MethodWrapper {
+        private final RConfig configRay;
+        
+        private MethodWrapper(RConfig config)
+        {
+            this.configRay = config; 
+        }
+        public void invoke()
+        {
+            execute(configRay);
+        }
     }
 }

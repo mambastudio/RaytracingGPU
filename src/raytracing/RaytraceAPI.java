@@ -5,6 +5,7 @@
  */
 package raytracing;
 
+import raytracing.envmap.REnvMap;
 import raytracing.display.BlendDisplay;
 import raytracing.device.RaytraceDevice;
 import bitmap.core.AbstractDisplay;
@@ -28,9 +29,10 @@ import raytracing.cl.RaytraceSource;
 import raytracing.geom.RPoint2;
 import raytracing.geom.RPoint3;
 import raytracing.geom.RVector3;
-import raytracing.fx.MaterialFX2;
+import raytracing.fx.MaterialFX;
 import raytracing.mesh.RMesh;
 import raytracing.structs.RBound;
+import raytracing.structs.RConfig;
 import raytracing.structs.RMaterial;
 import wrapper.core.CMemory;
 import wrapper.core.OpenCLConfiguration;
@@ -42,7 +44,7 @@ import wrapper.core.OpenCLConfiguration;
  * Class to link between raydevice, ui and any other frameworks e.g. I/O
  * 
  */
-public class RaytraceAPI implements RayAPI<MaterialFX2, RaytraceUIController>{
+public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
     //Opencl configuration for running single ray tracing program 
     private OpenCLConfiguration configuration = null;
     
@@ -51,10 +53,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX2, RaytraceUIController>{
     
     //Controller 
     private RaytraceUIController controllerImplementation = null;
-      
-    //Images dimension
-    private Value2Di raytraceImageDimension;
-    
+          
     //ray casting device
     private RaytraceDevice deviceRaytrace;
     
@@ -66,10 +65,13 @@ public class RaytraceAPI implements RayAPI<MaterialFX2, RaytraceUIController>{
     private RNormalBVH bvhBuild;
     
     //material for editing
-    private MaterialFX2[] matFXArray;
+    private MaterialFX[] matFXArray;
     
     //environment map
-    private RaytraceEnvironment envmap;
+    private REnvMap envmap;
+    
+    //raytracing and rendering configuration
+    private RConfig configRay;
     
     public RaytraceAPI()
     {
@@ -92,32 +94,34 @@ public class RaytraceAPI implements RayAPI<MaterialFX2, RaytraceUIController>{
     }
 
     @Override
-    public void init() {
-        //dimension of images
-        this.raytraceImageDimension = new Value2Di(500, 500);
+    public void init() {        
+        //render config
+        configRay = new RConfig();        
         
         //create bitmap images
         this.initBitmap(ALL_RAYTRACE_IMAGE);
         
         //instantiate devices
         deviceRaytrace = new RaytraceDevice(
-                this.raytraceImageDimension.x, 
-                this.raytraceImageDimension.y);        
+                this.configRay.resolutionR.x, 
+                this.configRay.resolutionR.y);
                 
         //init default mesh before api
         initDefaultMesh();
         
-        
          //envmap
-        envmap = new RaytraceEnvironment(configuration);
+        envmap = new REnvMap(configuration);
         
         //set api       
         deviceRaytrace.setAPI(this);
         
-       
-                        
         //start ray tracing
         deviceRaytrace.start();
+    }
+    
+    public RConfig getRayConfiguration()
+    {
+        return configRay;
     }
 
     @Override
@@ -140,7 +144,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX2, RaytraceUIController>{
     public Value2Di getImageSize(ImageType imageType) {
         switch (imageType) {            
             case RAYTRACE_IMAGE:
-                return this.raytraceImageDimension;
+                return new Value2Di(configRay.getResolutionR().x, configRay.getResolutionR().y);
             default:
                 return null;
         }
@@ -150,7 +154,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX2, RaytraceUIController>{
     public void setImageSize(ImageType imageType, int width, int height) {
         switch (imageType) {            
             case RAYTRACE_IMAGE:
-                this.raytraceImageDimension.set(width, height);
+                this.configRay.setResolutionR(width, height);
             default:
                 break;
         }
@@ -160,7 +164,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX2, RaytraceUIController>{
     public int getGlobalSizeForDevice(DeviceType device) {
         switch (device) {
             case RAYTRACE:
-                return this.raytraceImageDimension.x * this.raytraceImageDimension.y;            
+                return this.configRay.getResolutionRSize();            
             default:
                 return -1;
         }
@@ -403,10 +407,10 @@ public class RaytraceAPI implements RayAPI<MaterialFX2, RaytraceUIController>{
     {
         int matSize = mesh.clMaterials().getSize();
         
-        matFXArray = new MaterialFX2[matSize];
+        matFXArray = new MaterialFX[matSize];
         for(int i = 0; i<matFXArray.length; i++)
         {            
-            matFXArray[i] = new MaterialFX2();
+            matFXArray[i] = new MaterialFX();
             matFXArray[i].setCMaterial(mesh.clMaterials().get(i));
         }
     }
@@ -504,13 +508,13 @@ public class RaytraceAPI implements RayAPI<MaterialFX2, RaytraceUIController>{
     }
 
     @Override
-    public void setMaterial(int index, MaterialFX2 material) {
+    public void setMaterial(int index, MaterialFX material) {
         //TODO 
         matFXArray[index].setMaterial(material);
     }
 
     @Override
-    public MaterialFX2 getMaterial(int index) {
+    public MaterialFX getMaterial(int index) {
         return matFXArray[index];
     }
 
@@ -527,7 +531,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX2, RaytraceUIController>{
     }
     
     
-    public RaytraceEnvironment getEnvironmentalMapCL()
+    public REnvMap getEnvironmentalMapCL()
     {
         return envmap;
     }

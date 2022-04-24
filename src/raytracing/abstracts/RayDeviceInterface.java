@@ -12,6 +12,7 @@ import coordinate.generic.AbstractBound;
 import coordinate.generic.AbstractMesh;
 import coordinate.generic.raytrace.AbstractAccelerator;
 import coordinate.model.CameraModel;
+import raytracing.structs.RConfig;
 
 /**
  *
@@ -46,11 +47,18 @@ public interface RayDeviceInterface <
     public void setGlobalSize(int globalSize);
     public void setLocalSize(int localSize);
     
-    default void start(){execute();}            
-    public void execute();    
-    public void pause();
-    public void stop();
-    public void resume();
+    default void start(){throw new UnsupportedOperationException("Operation not supported");}    
+    
+    //render either with new config or no config
+    default void execute(){throw new UnsupportedOperationException("Operation not supported");}     
+    default void execute(RConfig configRay){throw new UnsupportedOperationException("Operation not supported");}     
+    
+    default void pause(){throw new UnsupportedOperationException("Operation not supported");} 
+    default void stop(){throw new UnsupportedOperationException("Operation not supported");} 
+    
+    //render either with new config or no config
+    default void resume(){throw new UnsupportedOperationException("Operation not supported");} 
+    default void resume(RConfig configRay){throw new UnsupportedOperationException("Operation not supported");}     
     
     public boolean isPaused();
     public boolean isRunning();

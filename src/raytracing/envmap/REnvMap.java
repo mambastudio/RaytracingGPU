@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package raytracing;
+package raytracing.envmap;
 
 import bitmap.image.BitmapRGBE;
 import coordinate.sampling.sat.SAT;
@@ -19,7 +19,7 @@ import wrapper.core.memory.values.FloatValue;
  *
  * @author user
  */
-public class RaytraceEnvironment {
+public class REnvMap {
     private final OpenCLConfiguration configuration;
     
     //env map
@@ -30,7 +30,7 @@ public class RaytraceEnvironment {
     
     private SAT sat;
     
-    public RaytraceEnvironment(OpenCLConfiguration configuration)
+    public REnvMap(OpenCLConfiguration configuration)
     {
         this.configuration  = configuration;
         this.crgb4          = configuration.createBufferF(RColor4.class, 1, READ_ONLY);

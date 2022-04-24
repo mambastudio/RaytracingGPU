@@ -20,7 +20,7 @@ public class BlendDisplay extends LayerDisplayAbstract {
     public BlendDisplay(String... layers)
     {
         super();
-        initDisplay(layers);
+        initDisplay(layers);        
     }
     
     @Override

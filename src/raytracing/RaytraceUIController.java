@@ -33,7 +33,7 @@ import raytracing.abstracts.RayControllerInterface;
 import static raytracing.device.RaytraceDevice.ShadeType.COLOR_SHADE;
 import static raytracing.device.RaytraceDevice.ShadeType.NORMAL_SHADE;
 import static raytracing.device.RaytraceDevice.ShadeType.TEXTURE_SHADE;
-import raytracing.fx.MaterialFX2;
+import raytracing.fx.MaterialFX;
 import raytracing.fx.dialog.FileChooser;
 import raytracing.fx.dialog.OBJSettingDialogFX;
 import raytracing.geom.RPoint3;
@@ -46,7 +46,7 @@ import raytracing.structs.RRay;
  *
  * @author user
  */
-public class RaytraceUIController implements Initializable, RayControllerInterface<RaytraceAPI, MaterialFX2>{
+public class RaytraceUIController implements Initializable, RayControllerInterface<RaytraceAPI, MaterialFX>{
 
     /**
      * Initializes the controller class.
@@ -111,10 +111,9 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
         api.getDisplay(BlendDisplay.class).translationDepth.addListener((observable, old_value, new_value) -> {  
             //current device that is rendering is raytrace
             if(!api.isDevicePriority(RAYTRACE)) return;
-           
             orientation.translateDistance(api.getDevice(RaytraceDevice.class).getCameraModel(), 
                     new_value.floatValue() * 0.1f * api.getDevice(RaytraceDevice.class).getPriorityBound().getMaximumExtent());     
-            api.getDevice(RaytraceDevice.class).resume();
+            api.getDevice(RaytraceDevice.class).resume(api.getRayConfiguration());
         });
         
         api.getDisplay(BlendDisplay.class).translationXY.addListener((observable, old_value, new_value) -> {   
@@ -123,7 +122,7 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
             
             orientation.rotateX(api.getDevice(RaytraceDevice.class).getCameraModel(), (float) new_value.getX());
             orientation.rotateY(api.getDevice(RaytraceDevice.class).getCameraModel(), (float) new_value.getY());
-            api.getDevice(RaytraceDevice.class).resume();            
+            api.getDevice(RaytraceDevice.class).resume(api.getRayConfiguration());            
         });
         
         api.getDisplay(BlendDisplay.class).setOnMouseClicked(e->{
@@ -142,8 +141,7 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
                     api.getDevice(RaytraceDevice.class).findBound(instance, bound);
                     api.repositionCameraToBoundRT(bound);
                     api.getDevice(RaytraceDevice.class).setPriorityBound(bound);
-                    api.getDevice(RaytraceDevice.class).resume();
-                    
+                    api.getDevice(RaytraceDevice.class).resume(api.getRayConfiguration());
                 }
             }
         });
@@ -168,7 +166,7 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
             DialogProcess processDialog = new DialogProcess(300, 100);
             processDialog.setRunnable(()->{
                 api.initMesh(fileOption.get().getFile().toURI());
-                api.getDevice(RaytraceDevice.class).resume();
+                api.getDevice(RaytraceDevice.class).resume(api.getRayConfiguration());
             });
             processDialog.showAndWait(UtilityHandler.getScene());
         }
@@ -177,6 +175,6 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
     public void resetCameraToScene(ActionEvent e)
     {
         api.repositionCameraToSceneRT();
-        api.getDevice(RaytraceDevice.class).resume();
+        api.getDevice(RaytraceDevice.class).resume(api.getRayConfiguration());
     }
 }

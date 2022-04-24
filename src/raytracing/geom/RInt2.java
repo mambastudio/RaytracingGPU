@@ -19,17 +19,44 @@ public class RInt2 implements AbstractCoordinateInteger{
     
     public RInt2()
     {
-        
+        x = y = 0;
+    }
+    
+    public RInt2(int xy)
+    {
+        x = y = xy;
+    }
+    
+    public RInt2(int x, int y)
+    {
+        this.x = x;
+        this.y = y;
     }
 
     @Override
     public int get(char axis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        switch (axis) {
+            case 'x':
+                return x;
+            case 'y':
+                return y;
+            default:
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.  
+        }
     }
 
     @Override
     public void set(char axis, int value) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        switch (axis) {
+            case 'x':
+                x = value;
+                break;
+            case 'y':
+                y = value;
+                break;
+            default:
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     @Override
@@ -40,7 +67,17 @@ public class RInt2 implements AbstractCoordinateInteger{
 
     @Override
     public void setIndex(int index, int value) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        switch (index)
+        {
+            case 0:
+                x = value;
+                break;
+            case 1:
+                y = value;
+                break;   
+            default:
+                throw new UnsupportedOperationException("Not supported yet.");
+        }                
     }
 
     @Override

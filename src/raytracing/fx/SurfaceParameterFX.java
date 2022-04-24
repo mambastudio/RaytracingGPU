@@ -24,7 +24,7 @@ import raytracing.structs.RSurfaceParameter2;
  *
  * @author user
  */
-public class SurfaceParameterFX2 implements Serializable {
+public class SurfaceParameterFX implements Serializable {
     public transient BooleanProperty          textureTitledPaneExpanded;    
     public transient BooleanProperty          diffuseTitledPaneExpanded;    
     public transient BooleanProperty          glossyTitledPaneExpanded;    
@@ -47,7 +47,7 @@ public class SurfaceParameterFX2 implements Serializable {
     public transient ObjectProperty<Color>    emission_color;
     public transient Point3FX                 emission_param;
     
-    public SurfaceParameterFX2()
+    public SurfaceParameterFX()
     {
         init();
     }
@@ -76,9 +76,9 @@ public class SurfaceParameterFX2 implements Serializable {
         emission_param  = new Point3FX(0, 1f, 0);
     }
     
-    public SurfaceParameterFX2 copy()
+    public SurfaceParameterFX copy()
     {
-        SurfaceParameterFX2 param = new SurfaceParameterFX2();
+        SurfaceParameterFX param = new SurfaceParameterFX();
         
         param.textureTitledPaneExpanded.set(textureTitledPaneExpanded.get());
         param.diffuseTitledPaneExpanded.set(diffuseTitledPaneExpanded.get());
@@ -102,7 +102,7 @@ public class SurfaceParameterFX2 implements Serializable {
         return param;
     }
     
-    public void set(SurfaceParameterFX2 param)
+    public void set(SurfaceParameterFX param)
     {
         textureTitledPaneExpanded.set(param.textureTitledPaneExpanded.get());
         diffuseTitledPaneExpanded.set(param.diffuseTitledPaneExpanded.get());

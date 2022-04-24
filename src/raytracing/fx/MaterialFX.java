@@ -23,21 +23,21 @@ import raytracing.structs.RMaterial;
  *
  * @author user
  */
-public class MaterialFX2 implements Serializable, RayMaterial<MaterialFX2>{
+public class MaterialFX implements Serializable, RayMaterial<MaterialFX>{
     //surface
-    public transient SurfaceParameterFX2 param; 
+    public transient SurfaceParameterFX param; 
     public transient StringProperty name;    
     private transient RMaterial cmaterial;
     
-    public MaterialFX2(String name)
+    public MaterialFX(String name)
     {
         this();
         this.name.set(name);
     }
     
-    public MaterialFX2()
+    public MaterialFX()
     {
-        param = new SurfaceParameterFX2();        
+        param = new SurfaceParameterFX();        
         name = new SimpleStringProperty("default");
     }
     
@@ -67,7 +67,7 @@ public class MaterialFX2 implements Serializable, RayMaterial<MaterialFX2>{
     
     public final void init()
     {
-        param = new SurfaceParameterFX2();        
+        param = new SurfaceParameterFX();        
         name = new SimpleStringProperty("default");
     }
     
@@ -88,15 +88,15 @@ public class MaterialFX2 implements Serializable, RayMaterial<MaterialFX2>{
     }
 
     @Override
-    public void setMaterial(MaterialFX2 m) {
+    public void setMaterial(MaterialFX m) {
         param.set(m.param);
         name.set(m.name.get());
         refreshCMaterial();        
     }
 
     @Override
-    public MaterialFX2 copy() {
-        MaterialFX2 mat = new MaterialFX2();
+    public MaterialFX copy() {
+        MaterialFX mat = new MaterialFX();
         mat.param.set(param);
         mat.name.set(name.get());
         return mat;
@@ -191,7 +191,7 @@ public class MaterialFX2 implements Serializable, RayMaterial<MaterialFX2>{
 
     private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         init();      
-        param = (SurfaceParameterFX2) s.readObject();        
+        param = (SurfaceParameterFX) s.readObject();        
         ReadObjectsHelper.readAllProp(s, 
                 name);
         
