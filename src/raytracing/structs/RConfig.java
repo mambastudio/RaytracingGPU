@@ -39,6 +39,16 @@ public class RConfig extends Structure{
         resolutionR.y = (int) Math.floor(height / 64) * 64;
     }
     
+    public int getLocalSize()
+    {
+        return localSize;
+    }
+    
+    public int getGlobalSize()
+    {
+        return resolutionR.x * resolutionR.y;
+    }
+    
     public RInt2 getResolutionR()
     {
         return resolutionR;

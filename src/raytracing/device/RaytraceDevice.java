@@ -9,11 +9,9 @@ package raytracing.device;
 import raytracing.accelerator.RNormalBVH;
 import bitmap.image.BitmapARGB;
 import coordinate.model.OrientationModel;
-import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javafx.application.Platform;
 import raytracing.display.BlendDisplay;
 import raytracing.display.Overlay;
 import raytracing.RaytraceAPI;
@@ -81,7 +79,7 @@ public class RaytraceDevice implements RayDeviceInterface<
     private Overlay overlay;
     
     //global and local size
-    int globalWorkSize, localWorkSize;
+    int globalWorkSize;
     
     //priority bound, that is the main focus for the ray trace (e.g. selected object)
     RBound priorityBound;
@@ -131,7 +129,7 @@ public class RaytraceDevice implements RayDeviceInterface<
         this.raytraceBitmap = new BitmapARGB(w, h);
         this.overlay = new Overlay(w, h);
         this.globalWorkSize = width * height;
-        this.localWorkSize = 250;
+     
     }
 
     @Override
@@ -148,14 +146,14 @@ public class RaytraceDevice implements RayDeviceInterface<
     
     public void initBuffers()
     {
-        raysBuffer          = configuration.createBufferB(RRay.class, globalWorkSize, READ_WRITE);
+        raysBuffer          = configuration.createBufferB(RRay.class, maxGlobalSize, READ_WRITE);
         cameraBuffer        = configuration.createBufferB(RCamera.class, 1, READ_WRITE);
         count               = configuration.createFromI(IntValue.class, new int[]{globalWorkSize}, READ_WRITE);
-        isectBuffer         = configuration.createBufferB(RIntersection.class, globalWorkSize, READ_WRITE);
-        imageBuffer         = configuration.createBufferI(IntValue.class, globalWorkSize, READ_WRITE);        
-        groupBuffer         = configuration.createBufferI(IntValue.class, globalWorkSize, READ_WRITE);
-        texBuffer           = configuration.createBufferI(RTextureData.class, globalWorkSize, READ_WRITE);
-        bsdfBuffer          = configuration.createBufferB(RBsdf.class, globalWorkSize, READ_WRITE);
+        isectBuffer         = configuration.createBufferB(RIntersection.class, maxGlobalSize, READ_WRITE);
+        imageBuffer         = configuration.createBufferI(IntValue.class, maxGlobalSize, READ_WRITE);        
+        groupBuffer         = configuration.createBufferI(IntValue.class, maxGlobalSize, READ_WRITE);
+        texBuffer           = configuration.createBufferI(RTextureData.class, maxGlobalSize, READ_WRITE);
+        bsdfBuffer          = configuration.createBufferB(RBsdf.class, maxGlobalSize, READ_WRITE);
         texApplyPass        = new RTextureApplyPass(api, texBuffer, count);
         
         groupIndex          = configuration.createBufferI(IntValue.class, 1, READ_WRITE);
@@ -235,10 +233,33 @@ public class RaytraceDevice implements RayDeviceInterface<
     public void updateImage() {      
         //transfer data from opencl to cpu
         imageBuffer.transferFromDevice();
-        groupBuffer.transferFromDevice();
+        groupBuffer.transferFromDevice();        
         //write to bitmap and overlay
         raytraceBitmap.writeColor((int[]) imageBuffer.getBufferArray(), 0, 0, width, height);
         overlay.copyToArray((int[])groupBuffer.getBufferArray());
+        //image fill
+        display.imageFill(RAYTRACE_IMAGE.name(), raytraceBitmap);
+        
+    }
+    
+    public void updateImage(RConfig configRay) {      
+        //transfer data from opencl to cpu
+        imageBuffer.transferFromDevice();
+        groupBuffer.transferFromDevice();
+                
+        //get array of image and group
+        int[] imageArrayCL = (int[]) imageBuffer.getBufferArray();
+        int[] imageArray = new int[configRay.resolutionR.x * configRay.resolutionR.y];        
+        System.arraycopy(imageArrayCL, 0, imageArray, 0, imageArray.length);
+        
+        int[] imageGroupCL = (int[]) groupBuffer.getBufferArray();
+        int[] imageGroup = new int[configRay.resolutionR.x * configRay.resolutionR.y];        
+        System.arraycopy(imageGroupCL, 0, imageGroup, 0, imageGroup.length);
+                
+        //write to bitmap and overlay
+        raytraceBitmap.writeColor((int[]) imageArray, 0, 0, configRay.resolutionR.x, configRay.resolutionR.y);
+        overlay.copyToArray((int[])imageGroup);
+        
         //image fill
         display.imageFill(RAYTRACE_IMAGE.name(), raytraceBitmap);
         
@@ -267,41 +288,44 @@ public class RaytraceDevice implements RayDeviceInterface<
     }
 
     @Override
-    public void execute(RConfig configRay) {        
+    public void execute(RConfig configRay) {     
+        //init buffers
+        initImages(configRay);
+        
         if(cameraModel.isSynched(cameraBuffer.get(0)))
             raytraceThread.chill();       
-        updateCamera();
-        configuration.execute1DKernel(initCameraRaysKernel, globalWorkSize, localWorkSize);
-        configuration.execute1DKernel(intersectPrimitivesKernel, globalWorkSize, localWorkSize);
-        configuration.execute1DKernel(setupBSDFRaytraceKernel, globalWorkSize, localWorkSize);
+        updateCamera(configRay);
+        configuration.execute1DKernel(initCameraRaysKernel, globalWorkSize, configRay.localSize);
+        configuration.execute1DKernel(intersectPrimitivesKernel, globalWorkSize, configRay.localSize);
+        configuration.execute1DKernel(setupBSDFRaytraceKernel, globalWorkSize, configRay.localSize);
         
         //pass texture
-        configuration.execute1DKernel(textureInitPassKernel, globalWorkSize, localWorkSize);
+        configuration.execute1DKernel(textureInitPassKernel, globalWorkSize, configRay.localSize);
         texApplyPass.process();
-        configuration.execute1DKernel(updateToTextureColorRTKernel, globalWorkSize, localWorkSize);
+        configuration.execute1DKernel(updateToTextureColorRTKernel, globalWorkSize, configRay.localSize);
         
-        configuration.execute1DKernel(backgroundShadeKernel, globalWorkSize, localWorkSize); 
+        configuration.execute1DKernel(backgroundShadeKernel, globalWorkSize, configRay.localSize); 
         
         //shade type
         if(null == shadeType)
-            configuration.execute1DKernel(fastShadeKernel, globalWorkSize, localWorkSize);
+            configuration.execute1DKernel(fastShadeKernel, globalWorkSize, configRay.localSize);
         else switch (shadeType) {
             case COLOR_SHADE:
-                configuration.execute1DKernel(fastShadeKernel, globalWorkSize, localWorkSize);
+                configuration.execute1DKernel(fastShadeKernel, globalWorkSize, configRay.localSize);
                 break;
             case NORMAL_SHADE:
-                configuration.execute1DKernel(fastShadeNormalsKernel, globalWorkSize, localWorkSize);
+                configuration.execute1DKernel(fastShadeNormalsKernel, globalWorkSize, configRay.localSize);
                 break;
             case TEXTURE_SHADE:
-                configuration.execute1DKernel(fastShadeTextureUVKernel, globalWorkSize, localWorkSize);
+                configuration.execute1DKernel(fastShadeTextureUVKernel, globalWorkSize, configRay.localSize);
                 break;                
             default:
-                configuration.execute1DKernel(fastShadeKernel, globalWorkSize, localWorkSize);
+                configuration.execute1DKernel(fastShadeKernel, globalWorkSize, configRay.localSize);
                 break;
         }
         
-        configuration.execute1DKernel(updateGroupbufferShadeImageKernel, globalWorkSize, localWorkSize);
-        updateImage();
+        configuration.execute1DKernel(updateGroupbufferShadeImageKernel, globalWorkSize, configRay.localSize);
+        updateImage(configRay);
         configuration.finish();      
     }
 
@@ -346,6 +370,13 @@ public class RaytraceDevice implements RayDeviceInterface<
     public void updateCamera() {
         RCamera cam = cameraModel.getCameraStruct();
         cam.setDimension(new RPoint2(getWidth(), getHeight()));
+        cameraBuffer.setCL(cam);
+    }
+    
+    public void updateCamera(RConfig configRay)
+    {
+        RCamera cam = cameraModel.getCameraStruct();
+        cam.setDimension(new RPoint2(configRay.resolutionR.x, configRay.resolutionR.y));
         cameraBuffer.setCL(cam);
     }
 
@@ -422,7 +453,7 @@ public class RaytraceDevice implements RayDeviceInterface<
             this.configRay = config; 
         }
         public void invoke()
-        {
+        {            
             execute(configRay);
         }
     }

@@ -36,6 +36,7 @@ public class RTextureApplyPass {
    
     public void process()
     {
+        /*        
         texBuffer.transferFromDevice();
         count.transferFromDevice();
                
@@ -89,5 +90,6 @@ public class RTextureApplyPass {
            
         }
         texBuffer.transferToDevice();
+        */
     }
 }
