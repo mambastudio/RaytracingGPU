@@ -214,9 +214,10 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
             //set to device for rendering/raytracing
             this.deviceRaytrace.set(mesh, bvhBuild);
             
-            //init various buffers and kernels to reflect on new model            
-            deviceRaytrace.setAPI(this);
+            //init kernels with new buffers to reflect on new model            
+            deviceRaytrace.initKernels();
             
+            //reposition camera
             this.repositionCameraToSceneRT();
         }
     }

@@ -221,6 +221,30 @@ __kernel void fastShadeTextureUV(
     }
 }
 
+__kernel void fastShadeMaterial(
+    global Intersection* isects,
+    global int*          imageBuffer
+)
+{
+    //get thread id
+    int id = get_global_id( 0 );
+    
+    //default color
+    float4 color = (float4)(0, 0, 0, 1);
+    float4 color1 = (float4)(1, 1, 1, 1);
+    
+    //get intersect
+    global Intersection* isect = isects + id;
+
+
+    if(isect->hit)
+    {
+        float3 hashMatColor3 = hashAndColor(isect->mat + 1);
+        float4 hashMatColor4 = (float4)(hashMatColor3, 1.f);
+        imageBuffer[id] = getIntARGB(hashMatColor4);
+    }
+}
+
 __kernel void backgroundShade(
     global Intersection*      isects,
     global CameraStruct*      camera,

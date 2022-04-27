@@ -7,6 +7,7 @@ package raytracing.display;
 
 import javafx.geometry.Point2D;
 import javafx.scene.effect.BlendMode;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import raytracing.abstracts.LayerDisplayAbstract;
@@ -28,15 +29,19 @@ public class BlendDisplay extends LayerDisplayAbstract {
     {
         for(int i = 0; i<layers.length; i++)
             if(i == 0)
-                imageArray.put(layers[i], new ImageView());
+                imageArray.put(layers[i], new WrappedImageView());
             else
             {
-                imageArray.put(layers[i], new ImageView());
+                imageArray.put(layers[i], new WrappedImageView());
                 imageArray.get(layers[i]).setBlendMode(BlendMode.SRC_OVER);
             }
         
-        for(String name : layers)        
-            getChildren().add(imageArray.get(name));                    
+        for(String name : layers)  
+        {
+            ImageView imageview = imageArray.get(name);
+            //imageview.setManaged(false);
+            getChildren().add(imageview);
+        }                    
     }
         
     @Override
@@ -79,5 +84,69 @@ public class BlendDisplay extends LayerDisplayAbstract {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-    
+    //https://stackoverflow.com/questions/12630296/resizing-images-to-fit-the-parent-node
+    class WrappedImageView extends ImageView
+    {
+        WrappedImageView()
+        {
+            setPreserveRatio(false);
+        }
+
+        @Override
+        public double minWidth(double height)
+        {
+            return 448;
+        }
+
+        @Override
+        public double prefWidth(double height)
+        {
+            Image image = getImage();
+            if (image == null) return minWidth(height);
+            return image.getWidth();
+        }
+
+        @Override
+        public double maxWidth(double height)
+        {
+            return 16384;
+        }
+
+        @Override
+        public double minHeight(double width)
+        {
+            return 448;
+        }
+
+        @Override
+        public double prefHeight(double width)
+        {
+            Image image = getImage();
+            if (image == null) return minHeight(width);
+            return image.getHeight();
+        }
+
+        @Override
+        public double maxHeight(double width)
+        {
+            return 16384;
+        }
+
+        @Override
+        public boolean isResizable()
+        {
+            return true;
+        }
+
+        @Override
+        public void resize(double width, double height)
+        {
+            Image image = getImage();
+            if (image != null) 
+            {
+                setFitWidth(image.getWidth());
+                setFitHeight(image.getHeight());
+            }
+        }
+    }
 }

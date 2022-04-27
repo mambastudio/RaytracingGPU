@@ -2,9 +2,8 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Separator?>
-<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
@@ -22,13 +21,7 @@
                         <Button minWidth="89.0" mnemonicParsing="false" text="Load Env" />
                         <Button mnemonicParsing="false" onAction="#resetCameraToScene" text="Reset Camera" />
                         <Separator orientation="VERTICAL" prefHeight="0.0" prefWidth="7.0" />
-                        <RadioButton fx:id="shadeRadioButton" minWidth="69.0" mnemonicParsing="false" selected="true" text="Shade">
-                           <toggleGroup>
-                              <ToggleGroup fx:id="shadeTypeGroup" />
-                           </toggleGroup>
-                        </RadioButton>
-                        <RadioButton fx:id="normalRadioButton" minWidth="69.0" mnemonicParsing="false" text="Normals " toggleGroup="$shadeTypeGroup" />
-                        <RadioButton fx:id="textureRadioButton" minWidth="69.0" mnemonicParsing="false" text="Textures" toggleGroup="$shadeTypeGroup" />
+                        <ComboBox fx:id="shadeTypeCombo" prefWidth="150.0" />
                      </children>
                      <padding>
                         <Insets bottom="3.0" left="3.0" top="3.0" />

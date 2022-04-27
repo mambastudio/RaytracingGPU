@@ -22,8 +22,8 @@ public class RConfig extends Structure{
     public RConfig()
     {
         this.hasEnvironment = 0;
-        this.resolutionR = new RInt2(512, 512);
-        this.resolutionG = new RInt2(512, 512);
+        this.resolutionR = new RInt2(448, 448);
+        this.resolutionG = new RInt2(448, 448);
         this.frameCount = 1;
         this.localSize = 64;
     }

@@ -57,7 +57,7 @@ public class RaytracingGPU extends Application {
         primaryStage.setScene(scene);
         primaryStage.setTitle("RaytraceGPU");
         primaryStage.setMinWidth(900);
-        primaryStage.setMinHeight(650);
+        primaryStage.setMinHeight(550);
         primaryStage.show();
         primaryStage.setOnCloseRequest(e -> {
             Platform.runLater(()->System.exit(0));

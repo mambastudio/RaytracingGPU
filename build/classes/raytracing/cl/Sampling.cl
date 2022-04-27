@@ -11,6 +11,16 @@ typedef struct
    float frameCount;
 }State2;
 
+// Jenkins's "one at a time" hash function
+uint jenkinsHash(uint x) {
+	x += x << 10;
+	x ^= x >> 6;
+	x += x << 3;
+	x ^= x >> 11;
+	x += x << 15;
+	return x;
+}
+
 /// Hash function
 unsigned int WangHash(int seed)
 {
@@ -20,6 +30,15 @@ unsigned int WangHash(int seed)
     seed *= 0x27d4eb2d;
     seed = seed ^ (seed >> 15);
     return seed;
+}
+
+// Maps integers to colors using the hash function (generates pseudo-random colors)
+float3 hashAndColor(int i) {
+	uint hash = jenkinsHash(i);
+	float r = ((hash >> 0) & 0xFF) / 255.0f;
+	float g = ((hash >> 8) & 0xFF) / 255.0f;
+	float b = ((hash >> 16) & 0xFF) / 255.0f;
+	return (float3)(r, g, b);
 }
 
 int initRNG(global State2* state)

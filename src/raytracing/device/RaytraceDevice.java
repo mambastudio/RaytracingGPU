@@ -60,7 +60,7 @@ public class RaytraceDevice implements RayDeviceInterface<
     BlendDisplay display;
     AtomicBoolean isRendering = new AtomicBoolean(false);
     
-    public enum ShadeType{COLOR_SHADE, NORMAL_SHADE, TEXTURE_SHADE};    
+    public enum ShadeType{COLOR_SHADE, NORMAL_SHADE, TEXTURE_SHADE, MATERIAL_SHADE};    
     ShadeType shadeType = COLOR_SHADE;
     
     //API
@@ -77,10 +77,7 @@ public class RaytraceDevice implements RayDeviceInterface<
     private final int height;
     private BitmapARGB raytraceBitmap;
     private Overlay overlay;
-    
-    //global and local size
-    int globalWorkSize;
-    
+        
     //priority bound, that is the main focus for the ray trace (e.g. selected object)
     RBound priorityBound;
     
@@ -108,6 +105,7 @@ public class RaytraceDevice implements RayDeviceInterface<
     CKernel fastShadeKernel = null;
     CKernel fastShadeNormalsKernel = null;
     CKernel fastShadeTextureUVKernel = null;
+    CKernel fastShadeMaterialKernel = null;
     
     RTextureApplyPass texApplyPass = null;
     
@@ -128,7 +126,6 @@ public class RaytraceDevice implements RayDeviceInterface<
         this.height = h;
         this.raytraceBitmap = new BitmapARGB(w, h);
         this.overlay = new Overlay(w, h);
-        this.globalWorkSize = width * height;
      
     }
 
@@ -148,7 +145,7 @@ public class RaytraceDevice implements RayDeviceInterface<
     {
         raysBuffer          = configuration.createBufferB(RRay.class, maxGlobalSize, READ_WRITE);
         cameraBuffer        = configuration.createBufferB(RCamera.class, 1, READ_WRITE);
-        count               = configuration.createFromI(IntValue.class, new int[]{globalWorkSize}, READ_WRITE);
+        count               = configuration.createFromI(IntValue.class, new int[]{api.getRayConfiguration().getGlobalSize()}, READ_WRITE);
         isectBuffer         = configuration.createBufferB(RIntersection.class, maxGlobalSize, READ_WRITE);
         imageBuffer         = configuration.createBufferI(IntValue.class, maxGlobalSize, READ_WRITE);        
         groupBuffer         = configuration.createBufferI(IntValue.class, maxGlobalSize, READ_WRITE);
@@ -167,6 +164,7 @@ public class RaytraceDevice implements RayDeviceInterface<
         fastShadeKernel                     = configuration.createKernel("fastShade", isectBuffer, bsdfBuffer, imageBuffer);
         fastShadeNormalsKernel              = configuration.createKernel("fastShadeNormals", isectBuffer, imageBuffer);
         fastShadeTextureUVKernel            = configuration.createKernel("fastShadeTextureUV", isectBuffer, imageBuffer);
+        fastShadeMaterialKernel             = configuration.createKernel("fastShadeMaterial", isectBuffer, imageBuffer);
         backgroundShadeKernel               = configuration.createKernel("backgroundShade", isectBuffer, cameraBuffer, imageBuffer, raysBuffer, envmap.getRgbCL(), envmap.getEnvMapSize());
         updateGroupbufferShadeImageKernel   = api.getConfigurationCL().createKernel("updateGroupbufferShadeImage", isectBuffer, cameraBuffer, groupBuffer);
         textureInitPassKernel               = configuration.createKernel("textureInitPassRT", bsdfBuffer, isectBuffer, texBuffer);
@@ -258,6 +256,8 @@ public class RaytraceDevice implements RayDeviceInterface<
                 
         //write to bitmap and overlay
         raytraceBitmap.writeColor((int[]) imageArray, 0, 0, configRay.resolutionR.x, configRay.resolutionR.y);
+        
+       // overlay = new Overlay(configRay.resolutionR.x, configRay.resolutionR.y);
         overlay.copyToArray((int[])imageGroup);
         
         //image fill
@@ -290,41 +290,43 @@ public class RaytraceDevice implements RayDeviceInterface<
     @Override
     public void execute(RConfig configRay) {     
         //init buffers
-        initImages(configRay);
+        initImages(configRay);        
+        count.setCL(new IntValue(configRay.getGlobalSize()));
         
-        if(cameraModel.isSynched(cameraBuffer.get(0)))
-            raytraceThread.chill();       
         updateCamera(configRay);
-        configuration.execute1DKernel(initCameraRaysKernel, globalWorkSize, configRay.localSize);
-        configuration.execute1DKernel(intersectPrimitivesKernel, globalWorkSize, configRay.localSize);
-        configuration.execute1DKernel(setupBSDFRaytraceKernel, globalWorkSize, configRay.localSize);
+        configuration.execute1DKernel(initCameraRaysKernel, configRay.getGlobalSize(), configRay.getLocalSize());
+        configuration.execute1DKernel(intersectPrimitivesKernel, configRay.getGlobalSize(), configRay.getLocalSize());
+        configuration.execute1DKernel(setupBSDFRaytraceKernel, configRay.getGlobalSize(), configRay.getLocalSize());
         
         //pass texture
-        configuration.execute1DKernel(textureInitPassKernel, globalWorkSize, configRay.localSize);
+        configuration.execute1DKernel(textureInitPassKernel, configRay.getGlobalSize(), configRay.getLocalSize());
         texApplyPass.process();
-        configuration.execute1DKernel(updateToTextureColorRTKernel, globalWorkSize, configRay.localSize);
+        configuration.execute1DKernel(updateToTextureColorRTKernel, configRay.getGlobalSize(), configRay.getLocalSize());
         
-        configuration.execute1DKernel(backgroundShadeKernel, globalWorkSize, configRay.localSize); 
+        configuration.execute1DKernel(backgroundShadeKernel, configRay.getGlobalSize(), configRay.getLocalSize()); 
         
         //shade type
         if(null == shadeType)
-            configuration.execute1DKernel(fastShadeKernel, globalWorkSize, configRay.localSize);
+            configuration.execute1DKernel(fastShadeKernel, configRay.getGlobalSize(), configRay.getLocalSize());
         else switch (shadeType) {
             case COLOR_SHADE:
-                configuration.execute1DKernel(fastShadeKernel, globalWorkSize, configRay.localSize);
+                configuration.execute1DKernel(fastShadeKernel, configRay.getGlobalSize(), configRay.getLocalSize());
                 break;
             case NORMAL_SHADE:
-                configuration.execute1DKernel(fastShadeNormalsKernel, globalWorkSize, configRay.localSize);
+                configuration.execute1DKernel(fastShadeNormalsKernel, configRay.getGlobalSize(), configRay.getLocalSize());
                 break;
             case TEXTURE_SHADE:
-                configuration.execute1DKernel(fastShadeTextureUVKernel, globalWorkSize, configRay.localSize);
-                break;                
+                configuration.execute1DKernel(fastShadeTextureUVKernel, configRay.getGlobalSize(), configRay.getLocalSize());
+                break;  
+            case MATERIAL_SHADE:
+                configuration.execute1DKernel(fastShadeMaterialKernel, configRay.getGlobalSize(), configRay.getLocalSize());
+                break; 
             default:
-                configuration.execute1DKernel(fastShadeKernel, globalWorkSize, configRay.localSize);
+                configuration.execute1DKernel(fastShadeKernel, configRay.getGlobalSize(), configRay.getLocalSize());
                 break;
         }
         
-        configuration.execute1DKernel(updateGroupbufferShadeImageKernel, globalWorkSize, configRay.localSize);
+        configuration.execute1DKernel(updateGroupbufferShadeImageKernel, configRay.getGlobalSize(), configRay.getLocalSize());
         updateImage(configRay);
         configuration.finish();      
     }
@@ -434,6 +436,10 @@ public class RaytraceDevice implements RayDeviceInterface<
             while(!traceQueue.isEmpty())
                traceQueue.poll().invoke();
             
+            //pause here just in case nothing is rendered and paused initiated
+            raytraceThread.chill();
+            
+            //initiate pause
             raytraceThread.pauseExecution();       
         });      
     }

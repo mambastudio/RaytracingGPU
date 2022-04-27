@@ -17,12 +17,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.ComboBox;
 import static javafx.scene.input.MouseButton.PRIMARY;
 import javafx.scene.layout.StackPane;
 import jfx.dialog.type.DialogProcess;
@@ -30,7 +30,9 @@ import jfx.util.UtilityHandler;
 import static raytracing.abstracts.RayAPI.DeviceType.RAYTRACE;
 import static raytracing.abstracts.RayAPI.ImageType.RAYTRACE_IMAGE;
 import raytracing.abstracts.RayControllerInterface;
+import raytracing.device.RaytraceDevice.ShadeType;
 import static raytracing.device.RaytraceDevice.ShadeType.COLOR_SHADE;
+import static raytracing.device.RaytraceDevice.ShadeType.MATERIAL_SHADE;
 import static raytracing.device.RaytraceDevice.ShadeType.NORMAL_SHADE;
 import static raytracing.device.RaytraceDevice.ShadeType.TEXTURE_SHADE;
 import raytracing.fx.MaterialFX;
@@ -52,15 +54,9 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
      * Initializes the controller class.
      */    
     @FXML
-    StackPane viewportPane;
+    StackPane viewportPane;   
     @FXML
-    ToggleGroup shadeTypeGroup;
-    @FXML
-    RadioButton shadeRadioButton;
-    @FXML
-    RadioButton normalRadioButton;
-    @FXML
-    RadioButton textureRadioButton;
+    ComboBox<ShadeType> shadeTypeCombo;
     
     
     private RaytraceAPI api;     
@@ -71,20 +67,33 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        shadeRadioButton.setUserData(COLOR_SHADE);
-        normalRadioButton.setUserData(NORMAL_SHADE);
-        textureRadioButton.setUserData(TEXTURE_SHADE);
         
-        shadeTypeGroup.selectedToggleProperty().addListener((o, ov, nv)->{
-            if(nv != null)
-            {
-                if(nv.getUserData() == COLOR_SHADE)
+        shadeTypeCombo.getItems().add(COLOR_SHADE);
+        shadeTypeCombo.getItems().add(NORMAL_SHADE);
+        shadeTypeCombo.getItems().add(TEXTURE_SHADE);
+        shadeTypeCombo.getItems().add(MATERIAL_SHADE);
+        shadeTypeCombo.getSelectionModel().select(COLOR_SHADE);
+        
+        shadeTypeCombo.setOnAction(event->{           
+            ShadeType selectedItem = shadeTypeCombo.getSelectionModel().getSelectedItem();            
+            if(null != selectedItem)
+                switch (selectedItem) {
+                case COLOR_SHADE:
                     api.getDevice(RaytraceDevice.class).setShadeType(COLOR_SHADE);
-                else if(nv.getUserData() == NORMAL_SHADE)
+                    break;
+                case NORMAL_SHADE:
                     api.getDevice(RaytraceDevice.class).setShadeType(NORMAL_SHADE);
-                else if(nv.getUserData() == TEXTURE_SHADE)
+                    break;
+                case TEXTURE_SHADE:
                     api.getDevice(RaytraceDevice.class).setShadeType(TEXTURE_SHADE);
+                    break;
+                case MATERIAL_SHADE:
+                    api.getDevice(RaytraceDevice.class).setShadeType(MATERIAL_SHADE);
+                    break;
+                default:
+                    break;
             }
+           
         });
         
         //obj file chooser
@@ -126,6 +135,10 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
         });
         
         api.getDisplay(BlendDisplay.class).setOnMouseClicked(e->{
+            Point2D xyx = api.getDisplay(BlendDisplay.class).getMouseOverXY(e, RAYTRACE_IMAGE.name());
+            int inst = api.getDevice(RaytraceDevice.class).getInstanceValue(xyx.getX(), xyx.getY());
+            System.out.println(inst);
+            
             if(e.getClickCount() == 2 && e.getButton() == PRIMARY)
             {
                 Point2D xy = api.getDisplay(BlendDisplay.class).getMouseOverXY(e, RAYTRACE_IMAGE.name());
@@ -146,8 +159,27 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
             }
         });
         
+        
+        //if window or layout changes size, raytrace with new viewport settings
+        ChangeListener<Number> listener = (o, ov, nv)->{
+            double displayWidth     = viewportPane.getWidth();
+            double displayHeight    = viewportPane.getHeight();   
+            
+            if(displayWidth < 448) //always power of 2 and divisible by 64 (local size)
+                displayWidth = 448;
+            if(displayHeight < 448)
+                displayHeight = 448;
+                      
+            //update global ray configuration and raytrace new
+            api.getRayConfiguration().setResolutionR((int)displayWidth, (int)displayHeight);            
+            api.getDevice(RaytraceDevice.class).resume(api.getRayConfiguration());
+        };
+        
+        viewportPane.widthProperty().addListener(listener);
+        viewportPane.heightProperty().addListener(listener);
+        
         //add display component
-        viewportPane.getChildren().add(api.getDisplay(BlendDisplay.class));
+        viewportPane.getChildren().add(api.getDisplay(BlendDisplay.class));        
     }
     
     public boolean showOBJStatistics(OBJInfo info)
