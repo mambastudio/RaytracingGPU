@@ -28,6 +28,17 @@ public class RConfig extends Structure{
         this.localSize = 64;
     }
     
+    public RConfig copy()
+    {
+        RConfig config = new RConfig();
+        config.hasEnvironment = hasEnvironment;
+        config.resolutionR = resolutionR.copy();
+        config.resolutionG = resolutionG.copy();
+        config.frameCount = frameCount;
+        config.localSize = localSize;
+        return config;
+    }
+    
     public void setHasEnvironment(boolean hasEnv)
     {
         hasEnvironment = hasEnv ? 1 : 0;
@@ -63,5 +74,15 @@ public class RConfig extends Structure{
     {
         resolutionR.x = width;
         resolutionR.y = height;
+    }
+    
+    public boolean isResolutionRSame(int width, int height)
+    {
+        return width == resolutionR.x && height == resolutionR.y;
+    }
+    
+    public boolean isResolutionGSame(int width, int height)
+    {
+        return width == resolutionG.x && height == resolutionG.y;
     }
 }

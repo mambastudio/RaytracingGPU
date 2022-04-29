@@ -19,12 +19,7 @@ import wrapper.core.CMemory;
  * @author user
  */
 public interface RayAcceleratorInterface extends AbstractAccelerator<RRay, RIntersection, RMesh, RBound>
-{    
-    enum AcceleratorType{
-        PLOC,
-        MEDIANCUT_BVH
-    };
-    
+{   
     public CMemory<RBound> getBounds();
     public CMemory<RNode> getNodes();
     default int getStartNodeIndex()

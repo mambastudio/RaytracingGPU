@@ -32,6 +32,11 @@ public class RInt2 implements AbstractCoordinateInteger{
         this.x = x;
         this.y = y;
     }
+    
+    public RInt2 copy()
+    {
+        return new RInt2(x, y);
+    }
 
     @Override
     public int get(char axis) {

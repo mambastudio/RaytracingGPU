@@ -43,9 +43,7 @@ public interface RayDeviceInterface <
             
     public void setAPI(A api);
     
-    public void set(MS mesh, AC bvhBuild);        
-    public void setGlobalSize(int globalSize);
-    public void setLocalSize(int localSize);
+    public void set(MS mesh, AC bvhBuild);     
     
     default void start(){throw new UnsupportedOperationException("Operation not supported");}    
     
@@ -64,9 +62,9 @@ public interface RayDeviceInterface <
     public boolean isRunning();
     public boolean isStopped();
         
-    default void updateImage(){}
+    default void updateImage(RConfig configRay){}    
+    public void updateCamera(RConfig configRay);    
     
-    public void updateCamera();    
     public void setCamera(CD cameraData);    
     public CM getCameraModel(); 
     

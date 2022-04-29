@@ -35,7 +35,11 @@ public class Overlay {
     
     public void copyToArray(int[] instances)
     {
-        if(instances == null || instances.length != wh) return;
+        if(instances == null || instances.length != wh) 
+        {
+            System.out.println("Kubafu not");
+            return;
+        }
         System.arraycopy(instances, 0, this.instances, 0, wh);
     }
     

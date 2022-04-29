@@ -27,7 +27,7 @@ import static javafx.scene.input.MouseButton.PRIMARY;
 import javafx.scene.layout.StackPane;
 import jfx.dialog.type.DialogProcess;
 import jfx.util.UtilityHandler;
-import static raytracing.abstracts.RayAPI.DeviceType.RAYTRACE;
+import static raytracing.abstracts.RayAPI.RayDeviceType.RAYTRACE;
 import static raytracing.abstracts.RayAPI.ImageType.RAYTRACE_IMAGE;
 import raytracing.abstracts.RayControllerInterface;
 import raytracing.device.RaytraceDevice.ShadeType;
@@ -135,19 +135,14 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
         });
         
         api.getDisplay(BlendDisplay.class).setOnMouseClicked(e->{
-            Point2D xyx = api.getDisplay(BlendDisplay.class).getMouseOverXY(e, RAYTRACE_IMAGE.name());
-            int inst = api.getDevice(RaytraceDevice.class).getInstanceValue(xyx.getX(), xyx.getY());
-            System.out.println(inst);
             
+          
             if(e.getClickCount() == 2 && e.getButton() == PRIMARY)
             {
                 Point2D xy = api.getDisplay(BlendDisplay.class).getMouseOverXY(e, RAYTRACE_IMAGE.name());
-                
-                //get raytrace device
-                
+               
                 //get instance in current pixel
-                int instance = api.getDevice(RaytraceDevice.class).getInstanceValue(xy.getX(), xy.getY());
-                
+                int instance = api.getDevice(RaytraceDevice.class).getInstanceValue(xy.getX(), xy.getY());                
                 if(instance > -1)
                 {
                     RBound bound = new RBound();

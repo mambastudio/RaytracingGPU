@@ -37,7 +37,7 @@ public interface RayAPI <
         ALL_RAYTRACE_IMAGE
     };
     
-    enum DeviceType{
+    enum RayDeviceType{
         RAYTRACE,
         RENDER
     }
@@ -83,32 +83,32 @@ public interface RayAPI <
     public Value2Di getImageSize(ImageType imageType);    
     public void setImageSize(ImageType name, int width, int height);
     
-    default void readImageFromDevice(DeviceType device, ImageType imageType){}; //TO DELETE
+    default void readImageFromDevice(RayDeviceType device, ImageType imageType){}; //TO DELETE
     default void applyImage(ImageType name, Supplier<BitmapARGB> supply){}; //TO DELETE
     public default int getImageWidth(ImageType imageType){return getImageSize(imageType).x;}
     public default int getImageHeight(ImageType imageType){return getImageSize(imageType).y;}
     
-    public int getGlobalSizeForDevice(DeviceType device);
+    public int getGlobalSizeForDevice(RayDeviceType device);
     
-    public void render(DeviceType device);
+    public void render(RayDeviceType device);
     
     public default void initMesh(String uri) {initMesh(Paths.get(uri));}    
     public default void initMesh(URI uri)    {initMesh(Paths.get(uri));}       
     public default void initDefaultMesh(){}
     public void initMesh(Path path);
     
-    public void startDevice(DeviceType device);
-    public void pauseDevice(DeviceType device);
-    public void stopDevice(DeviceType device);
-    public void resumeDevice(DeviceType device);
-    public boolean isDeviceRunning(DeviceType device);
+    public void startDevice(RayDeviceType device);
+    public void pauseDevice(RayDeviceType device);
+    public void stopDevice(RayDeviceType device);
+    public void resumeDevice(RayDeviceType device);
+    public boolean isDeviceRunning(RayDeviceType device);
     
-    public void setDevicePriority(DeviceType device);
-    public DeviceType getDevicePriority();
-    public boolean isDevicePriority(DeviceType device);
+    public void setDevicePriority(RayDeviceType device);
+    public RayDeviceType getDevicePriority();
+    public boolean isDevicePriority(RayDeviceType device);
         
-    public RayDeviceInterface getDevice(DeviceType device);
-    public void set(DeviceType device, RayDeviceInterface deviceImplementation);
+    public RayDeviceInterface getDevice(RayDeviceType device);
+    public void set(RayDeviceType device, RayDeviceInterface deviceImplementation);
     public I getController(String controller);
     public void set(String controller, I controllerImplementation);
     

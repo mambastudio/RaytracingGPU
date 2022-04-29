@@ -20,8 +20,8 @@ import java.nio.file.Path;
 import jfx.util.UtilityHandler;
 import org.jocl.CL;
 import raytracing.abstracts.RayAPI;
-import raytracing.abstracts.RayAPI.DeviceType;
-import static raytracing.abstracts.RayAPI.DeviceType.RAYTRACE;
+import raytracing.abstracts.RayAPI.RayDeviceType;
+import static raytracing.abstracts.RayAPI.RayDeviceType.RAYTRACE;
 import static raytracing.abstracts.RayAPI.ImageType.ALL_RAYTRACE_IMAGE;
 import raytracing.abstracts.RayDeviceInterface;
 import raytracing.accelerator.RNormalBVH;
@@ -58,7 +58,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
     private RaytraceDevice deviceRaytrace;
     
     //device priority
-    private DeviceType devicePriority = RAYTRACE;
+    private RayDeviceType devicePriority = RAYTRACE;
     
     //mesh and accelerator
     private RMesh mesh;
@@ -161,7 +161,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
     }
 
     @Override
-    public int getGlobalSizeForDevice(DeviceType device) {
+    public int getGlobalSizeForDevice(RayDeviceType device) {
         switch (device) {
             case RAYTRACE:
                 return this.configRay.getResolutionRSize();            
@@ -171,7 +171,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
     }
 
     @Override
-    public void render(DeviceType device) {
+    public void render(RayDeviceType device) {
         if(device.equals(RAYTRACE))
             deviceRaytrace.start();
     }
@@ -417,7 +417,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
     }
 
     @Override
-    public void startDevice(DeviceType device) {
+    public void startDevice(RayDeviceType device) {
         if(device.equals(RAYTRACE))
             this.deviceRaytrace.start();
         else
@@ -425,7 +425,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
     }
 
     @Override
-    public void pauseDevice(DeviceType device) {
+    public void pauseDevice(RayDeviceType device) {
         if(device.equals(RAYTRACE))
             this.deviceRaytrace.pause();
         else
@@ -433,7 +433,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
     }
 
     @Override
-    public void stopDevice(DeviceType device) {
+    public void stopDevice(RayDeviceType device) {
         if(device.equals(RAYTRACE))
             this.deviceRaytrace.stop();
         else
@@ -441,7 +441,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
     }
 
     @Override
-    public void resumeDevice(DeviceType device) {
+    public void resumeDevice(RayDeviceType device) {
         if(device.equals(RAYTRACE))
             this.deviceRaytrace.resume();
         else
@@ -449,7 +449,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
     }
 
     @Override
-    public boolean isDeviceRunning(DeviceType device) {
+    public boolean isDeviceRunning(RayDeviceType device) {
         switch (device) {
             case RAYTRACE:
                 return this.deviceRaytrace.isRunning();           
@@ -459,22 +459,22 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
     }
 
     @Override
-    public void setDevicePriority(DeviceType device) {
+    public void setDevicePriority(RayDeviceType device) {
         this.devicePriority = device;
     }
 
     @Override
-    public DeviceType getDevicePriority() {
+    public RayDeviceType getDevicePriority() {
         return this.devicePriority;
     }
 
     @Override
-    public boolean isDevicePriority(DeviceType device) {
+    public boolean isDevicePriority(RayDeviceType device) {
         return devicePriority.equals(device);
     }
 
     @Override
-    public RayDeviceInterface getDevice(DeviceType device) {
+    public RayDeviceInterface getDevice(RayDeviceType device) {
         if(device.equals(RAYTRACE))
             return deviceRaytrace;
         return null;
@@ -489,7 +489,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
     }
 
     @Override
-    public void set(DeviceType device, RayDeviceInterface deviceImplementation) {
+    public void set(RayDeviceType device, RayDeviceInterface deviceImplementation) {
         if(device.equals(RAYTRACE))
         {
             this.deviceRaytrace = (RaytraceDevice) deviceImplementation;

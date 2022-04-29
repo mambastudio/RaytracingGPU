@@ -73,8 +73,6 @@ public class RaytraceDevice implements RayDeviceInterface<
     RMesh mesh = null;
     RNormalBVH bvh = null;
     
-    private final int width;
-    private final int height;
     private BitmapARGB raytraceBitmap;
     private Overlay overlay;
         
@@ -122,8 +120,6 @@ public class RaytraceDevice implements RayDeviceInterface<
     
     public RaytraceDevice(int w, int h)
     {
-        this.width = w; 
-        this.height = h;
         this.raytraceBitmap = new BitmapARGB(w, h);
         this.overlay = new Overlay(w, h);
      
@@ -137,6 +133,10 @@ public class RaytraceDevice implements RayDeviceInterface<
     
     private void initImages(RConfig configRay)
     {
+        //no point of re-configuring new image if same size
+        if(configRay.isResolutionRSame(raytraceBitmap.getWidth(), raytraceBitmap.getHeight()))
+            return;
+        
         raytraceBitmap  = new BitmapARGB(configRay.resolutionR.x, configRay.resolutionR.y);
         overlay         = new Overlay(configRay.resolutionR.x, configRay.resolutionR.y);
     }
@@ -216,30 +216,8 @@ public class RaytraceDevice implements RayDeviceInterface<
     {
         return overlay;
     }
-    
-    public int getWidth()
-    {
-        return width;
-    }
-    
-    public int getHeight()
-    {
-        return height;
-    }
-    
-    @Override
-    public void updateImage() {      
-        //transfer data from opencl to cpu
-        imageBuffer.transferFromDevice();
-        groupBuffer.transferFromDevice();        
-        //write to bitmap and overlay
-        raytraceBitmap.writeColor((int[]) imageBuffer.getBufferArray(), 0, 0, width, height);
-        overlay.copyToArray((int[])groupBuffer.getBufferArray());
-        //image fill
-        display.imageFill(RAYTRACE_IMAGE.name(), raytraceBitmap);
         
-    }
-    
+    @Override
     public void updateImage(RConfig configRay) {      
         //transfer data from opencl to cpu
         imageBuffer.transferFromDevice();
@@ -276,16 +254,6 @@ public class RaytraceDevice implements RayDeviceInterface<
     public void setPriorityBound(RBound priorityBound){
         this.priorityBound = priorityBound;
     };
-
-    @Override
-    public void setGlobalSize(int globalSize) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void setLocalSize(int localSize) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
     @Override
     public void execute(RConfig configRay) {     
@@ -344,7 +312,7 @@ public class RaytraceDevice implements RayDeviceInterface<
     //add method call for raytracing
     private void addQueue(RConfig configRay)
     {
-        traceQueue.add(new MethodWrapper(configRay));
+        traceQueue.add(new MethodWrapper(configRay.copy()));
     }
 
     @Override
@@ -367,14 +335,8 @@ public class RaytraceDevice implements RayDeviceInterface<
     public boolean isStopped() {
         return raytraceThread.isTerminated();
     }
-
-    @Override
-    public void updateCamera() {
-        RCamera cam = cameraModel.getCameraStruct();
-        cam.setDimension(new RPoint2(getWidth(), getHeight()));
-        cameraBuffer.setCL(cam);
-    }
     
+    @Override
     public void updateCamera(RConfig configRay)
     {
         RCamera cam = cameraModel.getCameraStruct();
@@ -434,7 +396,12 @@ public class RaytraceDevice implements RayDeviceInterface<
     {     
        raytraceThread.startExecution(()-> {
             while(!traceQueue.isEmpty())
-               traceQueue.poll().invoke();
+            {
+                if(traceQueue.size() > 1) //remove unnecessary queues (also helps to improve mouse intersections).
+                    traceQueue.remove();
+                else
+                    traceQueue.poll().invoke();
+            }
             
             //pause here just in case nothing is rendered and paused initiated
             raytraceThread.chill();
