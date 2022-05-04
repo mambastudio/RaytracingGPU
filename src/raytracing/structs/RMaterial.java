@@ -15,12 +15,12 @@ import raytracing.abstracts.RayMaterial;
  */
 public class RMaterial extends Structure implements RayMaterial<RMaterial>  {
      //surface
-    public RSurfaceParameter2 param; 
+    public RSurfaceParameter param; 
        
 
     public RMaterial()
     {
-        param = new RSurfaceParameter2();
+        param = new RSurfaceParameter();
     }
     
     public void setDiffuse(float r, float g, float b)
@@ -50,14 +50,16 @@ public class RMaterial extends Structure implements RayMaterial<RMaterial>  {
         return mat;
     }
     
-    public void setSurfaceParameter(RSurfaceParameter2 param)
+    public void setSurfaceParameter(RSurfaceParameter param)
     {
         this.param = param;
     }
 
     @Override
     public void setMaterialT(MaterialT mat) {
-        param.diffuse_color.set(mat.diffuse.r, mat.diffuse.g, mat.diffuse.b, mat.diffuse.w);        
+        param.diffuse_color.set(mat.diffuse.r, mat.diffuse.g, mat.diffuse.b, mat.diffuse.w); 
+        param.mirror_color.set(mat.reflection.r, mat.reflection.g, mat.reflection.b, mat.reflection.w); 
+        param.emission_color.set(mat.emitter.r, mat.emitter.g, mat.emitter.b, mat.emitter.w);         
         this.refreshGlobalArray();
     }
 }

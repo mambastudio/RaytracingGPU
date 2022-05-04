@@ -60,7 +60,7 @@ public class OBJSettingDialogFX extends DialogExtend<Boolean> {
         ObservableList<SplitOBJPolicy> availableSplitPolicy = FXCollections.observableArrayList(info.getAvailableSplitPolicy());
         ObjectProperty<SplitOBJPolicy> currentSplitPolicy = new SimpleObjectProperty(info.splitPolicy());
         currentSplitPolicy.addListener((o, ov, nv)->{
-            info.setSplitPolicy(nv);
+            info.setSplitPolicy(nv);           
         });
         Setting splitPolicySettings = Setting.of("Type", 
                         availableSplitPolicy, 

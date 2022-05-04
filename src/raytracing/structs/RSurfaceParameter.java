@@ -13,7 +13,7 @@ import raytracing.geom.RPoint3;
  *
  * @author user
  */
-public class RSurfaceParameter2 extends Structure {
+public class RSurfaceParameter extends Structure {
     //this surface is done by texture
     public boolean          isDiffuseTexture;
     public boolean          isGlossyTexture;
@@ -30,7 +30,7 @@ public class RSurfaceParameter2 extends Structure {
     public RColor4          emission_color;
     public RPoint3          emission_param;
     
-    public RSurfaceParameter2()
+    public RSurfaceParameter()
     {
         isDiffuseTexture = false;
         isGlossyTexture = false;
@@ -47,9 +47,9 @@ public class RSurfaceParameter2 extends Structure {
         emission_param  = new RPoint3();
     }
     
-    public RSurfaceParameter2 copy()
+    public RSurfaceParameter copy()
     {
-        RSurfaceParameter2 param    = new RSurfaceParameter2();
+        RSurfaceParameter param    = new RSurfaceParameter();
         param.isDiffuseTexture      = isDiffuseTexture;
         param.isGlossyTexture       = isGlossyTexture;
         param.isRoughnessTexture    = isRoughnessTexture;

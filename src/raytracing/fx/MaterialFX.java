@@ -16,18 +16,17 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import jfx.dnd.ReadObjectsHelper;
 import jfx.dnd.WriteObjectsHelper;
-import raytracing.abstracts.RayMaterial;
 import raytracing.structs.RMaterial;
 
 /**
  *
  * @author user
  */
-public class MaterialFX implements Serializable, RayMaterial<MaterialFX>{
+public class MaterialFX implements Serializable{
     //surface
     public transient SurfaceParameterFX param; 
     public transient StringProperty name;    
-    private transient RMaterial cmaterial;
+    private transient RMaterial rmaterial;
     
     public MaterialFX(String name)
     {
@@ -41,7 +40,12 @@ public class MaterialFX implements Serializable, RayMaterial<MaterialFX>{
         name = new SimpleStringProperty("default");
     }
     
-    @Override
+    public MaterialFX(MaterialT mat)
+    {
+        this();
+        this.setMaterialT(mat);
+    }
+   
     public Image getDiffuseTexture()
     {
         if(param.diffuseTexture.get() != null)
@@ -49,7 +53,7 @@ public class MaterialFX implements Serializable, RayMaterial<MaterialFX>{
         return null;
     }
     
-    @Override
+   
     public Image getGlossyTexture()
     {
         if(param.glossyTexture.get() != null)
@@ -57,7 +61,7 @@ public class MaterialFX implements Serializable, RayMaterial<MaterialFX>{
         return null;
     }
     
-    @Override
+    
     public Image getRoughnessTexture()
     {
         if(param.roughnessTexture.get() != null)
@@ -70,31 +74,26 @@ public class MaterialFX implements Serializable, RayMaterial<MaterialFX>{
         param = new SurfaceParameterFX();        
         name = new SimpleStringProperty("default");
     }
-    
-    public void setCMaterial(RMaterial material)
-    {
-        this.cmaterial = material;        
-        param.setSurfaceParameter(material.param);        
+        
+    public void setMaterialT(MaterialT mat)
+    {        
+        this.name.set(mat.getNameString());
+        this.param.diffuse_color.set(mat.diffuse.getColorFX());  
+        this.param.mirror_color.set(mat.reflection.getColorFX());
+        this.param.emission_color.set(mat.emitter.getColorFX());        
     }
     
-    public void refreshCMaterial()
+    public RMaterial getRMaterial()
     {
-        if(cmaterial != null)
-        {
-            cmaterial.setSurfaceParameter(param.getSurfaceParameter());
-            cmaterial.refreshGlobalArray();        
-        }
-            
+        //TODO: Needs to affect changes done in this class
+        return rmaterial;
     }
-
-    @Override
-    public void setMaterial(MaterialFX m) {
+   
+    public void setMaterialFX(MaterialFX m) {
         param.set(m.param);
-        name.set(m.name.get());
-        refreshCMaterial();        
+        name.set(m.name.get());       
     }
-
-    @Override
+   
     public MaterialFX copy() {
         MaterialFX mat = new MaterialFX();
         mat.param.set(param);
@@ -107,15 +106,13 @@ public class MaterialFX implements Serializable, RayMaterial<MaterialFX>{
         float r_ = getRange(r, 0, 1);
         float g_ = getRange(g, 0, 1);
         float b_ = getRange(b, 0, 1);
-        param.diffuse_color.set(Color.color(r_, g_, b_));  
-        refreshCMaterial();
+        param.diffuse_color.set(Color.color(r_, g_, b_));          
     }
     
     public void setDiffuseAmount(float value)
     {
         float level = getRange(value, 0, 1);        
-        param.diffuse_param.x.set(level);
-        refreshCMaterial();      
+        param.diffuse_param.x.set(level);        
     }
     
     public void setGlossyColor(float r, float g, float b)
@@ -123,15 +120,13 @@ public class MaterialFX implements Serializable, RayMaterial<MaterialFX>{
         float r_ = getRange(r, 0, 1);
         float g_ = getRange(g, 0, 1);
         float b_ = getRange(b, 0, 1);
-        param.glossy_color.set(Color.color(r_, g_, b_));  
-        refreshCMaterial();
+        param.glossy_color.set(Color.color(r_, g_, b_));          
     }
     
     public void setGlossyAmount(float value)
     {
         float level = getRange(value, 0, 1);        
-        param.glossy_param.x.set(level);
-        refreshCMaterial();      
+        param.glossy_param.x.set(level);        
     }
     
     public void setGlossRoughness(float ax, float ay)
@@ -139,16 +134,14 @@ public class MaterialFX implements Serializable, RayMaterial<MaterialFX>{
         float ax_ = getRange(ax, 0, 1);    
         float ay_ = getRange(ay, 0, 1);
         param.glossy_param.y.set(ax_);
-        param.glossy_param.z.set(ay_);
-        refreshCMaterial();      
+        param.glossy_param.z.set(ay_);        
     }
     
     public void setGlossRoughness(float a)
     {
         float a_ = getRange(a, 0, 1);           
         param.glossy_param.y.set(a_);
-        param.glossy_param.z.set(a_);
-        refreshCMaterial();      
+        param.glossy_param.z.set(a_);        
     }
     
     private float getRange(float value, float min, float max)
@@ -177,11 +170,6 @@ public class MaterialFX implements Serializable, RayMaterial<MaterialFX>{
         return level;
     }
 
-    @Override
-    public void setMaterialT(MaterialT t) {
-        param.diffuse_color.set(new Color(t.diffuse.r, t.diffuse.g, t.diffuse.b, 1));
-    }
-    
     private void writeObject(ObjectOutputStream s) throws IOException {
         s.defaultWriteObject();
         s.writeObject(param);        

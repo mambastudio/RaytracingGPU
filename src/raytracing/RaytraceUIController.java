@@ -15,14 +15,19 @@ import filesystem.core.file.FileObject;
 import filesystem.explorer.FileExplorer;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import static javafx.scene.input.MouseButton.PRIMARY;
 import javafx.scene.layout.StackPane;
 import jfx.dialog.type.DialogProcess;
@@ -48,7 +53,7 @@ import raytracing.structs.RRay;
  *
  * @author user
  */
-public class RaytraceUIController implements Initializable, RayControllerInterface<RaytraceAPI, MaterialFX>{
+public class RaytraceUIController implements Initializable, RayControllerInterface<RaytraceAPI>{
 
     /**
      * Initializes the controller class.
@@ -56,18 +61,25 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
     @FXML
     StackPane viewportPane;   
     @FXML
-    ComboBox<ShadeType> shadeTypeCombo;
+    ComboBox<ShadeType> shadeTypeCombo;    
+    @FXML
+    TreeView<MaterialFX> sceneMaterial;
     
     
     private RaytraceAPI api;     
     private final OrientationModel<RPoint3, RVector3, RRay, RBound> orientation = new OrientationModel(RPoint3.class, RVector3.class);
        
-    
     private FileChooser objChooser = null;
+    
+    private List<MaterialFX> matFXList;
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        //hide root
+        sceneMaterial.setShowRoot(false);
+        sceneMaterial.setRoot(new TreeItem(new MaterialFX()));
         
+        //init shade type combo box
         shadeTypeCombo.getItems().add(COLOR_SHADE);
         shadeTypeCombo.getItems().add(NORMAL_SHADE);
         shadeTypeCombo.getItems().add(TEXTURE_SHADE);
@@ -100,11 +112,6 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
         objChooser = new FileChooser();
         objChooser.addExtensions(new FileExplorer.ExtensionFilter("OBJ", ".obj"));
     }    
-
-    @Override
-    public void displaySceneMaterial(ArrayList<MaterialT> materials) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
     @Override
     public void setAPI(RaytraceAPI api) {
@@ -197,6 +204,7 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
             });
             processDialog.showAndWait(UtilityHandler.getScene());
         }
+        setupCurrentMaterialFX(); //load material to UI
     }
     
     public void resetCameraToScene(ActionEvent e)
@@ -204,4 +212,22 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
         api.repositionCameraToSceneRT();
         api.getDevice(RaytraceDevice.class).resume(api.getRayConfiguration());
     }
+    
+    //setup ui material openOBJFile(e) in this class and init RaytraceAPI.java
+    public void setupCurrentMaterialFX()
+    {
+        ArrayList<MaterialT> materialsT = api.getCurrentMesh().getMaterialList();
+        matFXList = Arrays.asList(new MaterialFX[materialsT.size()]); //Fixed
+        for(int i = 0; i<matFXList.size(); i++)
+        {            
+            matFXList.set(i, new MaterialFX(materialsT.get(i)));           
+        }
+        
+        sceneMaterial.getRoot().getChildren().clear();         
+        for(MaterialFX matFX: matFXList)
+        {
+            sceneMaterial.getRoot().getChildren().add(new TreeItem(matFX));
+        }  
+    }
+    
 }

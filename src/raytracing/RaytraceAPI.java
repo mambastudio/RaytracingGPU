@@ -10,6 +10,7 @@ import raytracing.display.BlendDisplay;
 import raytracing.device.RaytraceDevice;
 import bitmap.core.AbstractDisplay;
 import bitmap.image.BitmapRGBE;
+import coordinate.parser.attribute.MaterialT;
 
 import coordinate.parser.obj.OBJInfo;
 import coordinate.parser.obj.OBJMappedParser;
@@ -17,6 +18,9 @@ import coordinate.parser.obj.OBJParser;
 import coordinate.utility.Timer;
 import coordinate.utility.Value2Di;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import jfx.util.UtilityHandler;
 import org.jocl.CL;
 import raytracing.abstracts.RayAPI;
@@ -44,7 +48,7 @@ import wrapper.core.OpenCLConfiguration;
  * Class to link between raydevice, ui and any other frameworks e.g. I/O
  * 
  */
-public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
+public class RaytraceAPI implements RayAPI<RaytraceUIController, RPoint3, RVector3, RPoint2>{
     //Opencl configuration for running single ray tracing program 
     private OpenCLConfiguration configuration = null;
     
@@ -63,10 +67,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
     //mesh and accelerator
     private RMesh mesh;
     private RNormalBVH bvhBuild;
-    
-    //material for editing
-    private MaterialFX[] matFXArray;
-    
+        
     //environment map
     private REnvMap envmap;
     
@@ -108,6 +109,9 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
                 
         //init default mesh before api
         initDefaultMesh();
+        
+        //setup ui materialfx after init default mesh
+        controllerImplementation.setupCurrentMaterialFX();
         
          //envmap
         envmap = new REnvMap(configuration);
@@ -187,6 +191,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
             OBJInfo info = parser.getInfo();
             return controllerImplementation.showOBJStatistics(info);
         });
+        
         if(succeed)
         {
             mesh = null;
@@ -198,7 +203,6 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
             Timer parseTime = Timer.timeThis(() -> parser.read(path.toString(), mesh)); //Time parsing
             //UI.print("parse-time", parseTime.toString()); 
             mesh.initCLBuffers();
-            setupMaterial();
 
             //display material in ui
             //controllerImplementation.displaySceneMaterial(parser.getSceneMaterialList());
@@ -227,7 +231,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
     public void initDefaultMesh() {
         //A simple cornell box
         String cube =   "# Cornell Box\n" +
-                        "o floor.005\n" +
+                        "o Floor\n" +
                         "v 1.014808 -1.001033 -0.985071\n" +
                         "v -0.995168 -1.001033 -0.994857\n" +
                         "v -1.005052 -1.001033 1.035119\n" +
@@ -235,7 +239,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
                         "vn 0.0000 1.0000 -0.0000\n" +
                         "s off\n" +
                         "f 1//1 2//1 3//1 4//1\n" +
-                        "o ceiling.005\n" +
+                        "o Ceiling\n" +
                         "v 1.024808 0.988967 -0.985022\n" +
                         "v 1.014924 0.988967 1.044954\n" +
                         "v -1.005052 0.988967 1.035119\n" +
@@ -243,7 +247,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
                         "vn -0.0000 -1.0000 0.0000\n" +
                         "s off\n" +
                         "f 5//2 6//2 7//2 8//2\n" +
-                        "o backWall.005\n" +
+                        "o BackWall\n" +
                         "v 0.984925 -1.001033 1.044808\n" +
                         "v -1.005052 -1.001033 1.035119\n" +
                         "v -1.005052 0.988967 1.035119\n" +
@@ -251,7 +255,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
                         "vn 0.0049 -0.0000 -1.0000\n" +
                         "s off\n" +
                         "f 9//3 10//3 11//3 12//3\n" +
-                        "o rightWall.005\n" +
+                        "o RightWall\n" +
                         "v -1.005052 -1.001033 1.035119\n" +
                         "v -0.995168 -1.001033 -0.994857\n" +
                         "v -0.995168 0.988967 -0.994857\n" +
@@ -259,7 +263,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
                         "vn 1.0000 0.0000 0.0049\n" +
                         "s off\n" +
                         "f 13//4 14//4 15//4 16//4\n" +
-                        "o Small_Box_Short_Box\n" +
+                        "o SmallBox\n" +
                         "v -0.526342 -0.401033 -0.752572\n" +
                         "v -0.699164 -0.401033 -0.173406\n" +
                         "v -0.129998 -0.401033 -0.000633\n" +
@@ -291,7 +295,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
                         "f 25//7 26//7 27//7 28//7\n" +
                         "f 33//8 34//8 35//8 36//8\n" +
                         "f 29//9 30//9 31//9 32//9\n" +
-                        "o tall_box\n" +
+                        "o TallBox\n" +
                         "v 0.530432 0.198967 -0.087419\n" +
                         "v -0.040438 0.198967 0.089804\n" +
                         "v 0.136736 0.198967 0.670674\n" +
@@ -323,7 +327,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
                         "f 45//12 46//12 47//12 48//12\n" +
                         "f 49//13 50//13 51//13 52//13\n" +
                         "f 53//14 54//14 55//14 56//14\n" +
-                        "o light.005\n" +
+                        "o Light\n" +
                         "v 0.240776 0.978967 -0.158830\n" +
                         "v 0.238926 0.978967 0.221166\n" +
                         "v -0.231068 0.978967 0.218877\n" +
@@ -331,7 +335,7 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
                         "vn 0.0000 -1.0000 0.0000\n" +
                         "s off\n" +
                         "f 57//15 58//15 59//15 60//15\n" +
-                        "o leftWall.000_leftWall.006\n" +
+                        "o LeftWall\n" +
                         "v 1.014808 -1.001033 -0.985071\n" +
                         "v 0.984925 -1.001033 1.044808\n" +
                         "v 1.014924 0.988967 1.044954\n" +
@@ -342,8 +346,12 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
         
         //load mesh and init mesh variables
         mesh = new RMesh(configuration);   
-        OBJParser parser = new OBJParser();        
+        
+        //parser info and attributes
+        OBJParser parser = new OBJParser(); 
+        parser.readAttributesString(cube); 
         parser.readString(cube, mesh);
+        
         mesh.initCLBuffers();
         
         //modify materials
@@ -392,30 +400,23 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
         //transfer material to device
         materialsc.transferToDevice();
         
+        materialsc.getBufferArray();
+        
                 
         //build accelerator
         bvhBuild = new RNormalBVH(configuration);
         bvhBuild.build(mesh);  
         
         //set to device for rendering/raytracing
-        this.deviceRaytrace.set(mesh, bvhBuild);
-        
-        //set up material for modification
-        setupMaterial();
+        this.deviceRaytrace.set(mesh, bvhBuild);        
     }
     
-    private void setupMaterial()
+    @Override
+    public RMesh getCurrentMesh()
     {
-        int matSize = mesh.clMaterials().getSize();
-        
-        matFXArray = new MaterialFX[matSize];
-        for(int i = 0; i<matFXArray.length; i++)
-        {            
-            matFXArray[i] = new MaterialFX();
-            matFXArray[i].setCMaterial(mesh.clMaterials().get(i));
-        }
+        return mesh;
     }
-
+    
     @Override
     public void startDevice(RayDeviceType device) {
         if(device.equals(RAYTRACE))
@@ -506,17 +507,6 @@ public class RaytraceAPI implements RayAPI<MaterialFX, RaytraceUIController>{
     public void set(String controller, RaytraceUIController controllerImplementation) {
         this.controllerImplementation = controllerImplementation;        
         this.controllerImplementation.setAPI(this);
-    }
-
-    @Override
-    public void setMaterial(int index, MaterialFX material) {
-        //TODO 
-        matFXArray[index].setMaterial(material);
-    }
-
-    @Override
-    public MaterialFX getMaterial(int index) {
-        return matFXArray[index];
     }
 
     @Override

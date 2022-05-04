@@ -10,6 +10,10 @@ package raytracing.abstracts;
 import bitmap.core.AbstractDisplay;
 import bitmap.image.BitmapARGB;
 import bitmap.image.BitmapRGBE;
+import coordinate.generic.AbstractCoordinateFloat;
+import coordinate.generic.AbstractMesh;
+import coordinate.generic.SCoord;
+import coordinate.generic.VCoord;
 import coordinate.utility.Value2Di;
 import java.net.URI;
 import java.nio.file.Path;
@@ -24,11 +28,15 @@ import wrapper.core.OpenCLConfiguration;
  *
  * @author user
  * @param <I>
- * @param <M>
+ * @param <P>
+ * @param <N>
+ * @param <T>
  */
 public interface RayAPI <
-        M extends RayMaterial, 
-        I extends RayControllerInterface>
+        I extends RayControllerInterface,
+        P extends SCoord, 
+        N extends VCoord, 
+        T extends AbstractCoordinateFloat>
 {
     enum ImageType{
         RAYTRACE_IMAGE, 
@@ -96,6 +104,7 @@ public interface RayAPI <
     public default void initMesh(URI uri)    {initMesh(Paths.get(uri));}       
     public default void initDefaultMesh(){}
     public void initMesh(Path path);
+    public AbstractMesh<P, N, T> getCurrentMesh();
     
     public void startDevice(RayDeviceType device);
     public void pauseDevice(RayDeviceType device);
@@ -111,10 +120,7 @@ public interface RayAPI <
     public void set(RayDeviceType device, RayDeviceInterface deviceImplementation);
     public I getController(String controller);
     public void set(String controller, I controllerImplementation);
-    
-    public void setMaterial(int index, M material);
-    public M getMaterial(int index);
-    
+        
     public void setEnvironmentMap(BitmapRGBE bitmap);
     
     public default <T> T getObject(Supplier<T> supplier)

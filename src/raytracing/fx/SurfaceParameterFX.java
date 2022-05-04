@@ -18,7 +18,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import jfx.dnd.ReadObjectsHelper;
 import jfx.dnd.WriteObjectsHelper;
-import raytracing.structs.RSurfaceParameter2;
+import raytracing.structs.RSurfaceParameter;
 
 /**
  *
@@ -185,7 +185,7 @@ public class SurfaceParameterFX implements Serializable {
                 emission_param.z);          
     }
         
-    public void setSurfaceParameter(RSurfaceParameter2 param)
+    public void setSurfaceParameter(RSurfaceParameter param)
     {
         
         diffuse_color.set(param.diffuse_color.getColorFX());
@@ -199,9 +199,9 @@ public class SurfaceParameterFX implements Serializable {
         
     }
     
-    public RSurfaceParameter2 getSurfaceParameter()
+    public RSurfaceParameter getSurfaceParameter()
     {
-        RSurfaceParameter2 param = new RSurfaceParameter2();
+        RSurfaceParameter param = new RSurfaceParameter();
         
         param.isDiffuseTexture = diffuseTexture.getValue().getImage()!=null;
         param.isGlossyTexture = glossyTexture.getValue().getImage()!=null;

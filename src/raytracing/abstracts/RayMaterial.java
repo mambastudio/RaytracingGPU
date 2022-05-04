@@ -16,12 +16,7 @@ import javafx.scene.image.Image;
  * @param <M>
  */
 public interface RayMaterial <M extends RayMaterial> {    
-    public enum BRDFType{
-        DIFFUSE, 
-        ANISOTROPIC,
-        EMITTER;
-    }
-        
+    
     public void setMaterial(M m);
     public M copy();
     public void setMaterialT(MaterialT t);

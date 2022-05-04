@@ -7,22 +7,18 @@ package raytracing.abstracts;
  */
 
 
-import coordinate.parser.attribute.MaterialT;
-import java.util.ArrayList;
 import javafx.fxml.Initializable;
 
 /**
  *
  * @author user
  * @param <A>
- * @param <M>
  */
-public interface RayControllerInterface<A extends RayAPI, M extends RayMaterial> extends Initializable {
+public interface RayControllerInterface<A extends RayAPI> extends Initializable {
     public enum PrintType {
         PROGRESS,
         ERROR
     }
-    
-    public void displaySceneMaterial(ArrayList<MaterialT> materials);
+        
     public void setAPI(A api);        
 }

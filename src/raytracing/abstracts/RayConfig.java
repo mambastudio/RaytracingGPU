@@ -25,6 +25,8 @@ public interface RayConfig<T extends RayConfig, I2 extends AbstractCoordinateInt
     public I2 getResolution(RayDeviceType deviceType);
     public void setResolution(RayDeviceType deviceType, int width, int height);
     public boolean isResolutionSame(RayDeviceType deviceType, int width, int height);
+    public void setMaxResolution(RayDeviceType deviceType, int width, int height);
+    public I2 getMaxResolution(RayDeviceType deviceType);
     
     default int getLocalSize(){return 64;};
     public int getGlobalSize(); //divisible by 2^n and 64

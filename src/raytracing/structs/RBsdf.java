@@ -13,7 +13,7 @@ import raytracing.geom.RPoint3;
  * @author user
  */
 public class RBsdf extends Structure{
-    public  RSurfaceParameter2  param;     //chosen surface
+    public  RSurfaceParameter  param;     //chosen surface
 
     public  RFrame frame;                 //local frame of reference
 
@@ -26,7 +26,7 @@ public class RBsdf extends Structure{
     
     public RBsdf()
     {
-        param           = new RSurfaceParameter2();
+        param           = new RSurfaceParameter();
         frame           = new RFrame();
         localDirFix     = new RPoint3();
         localGeomN      = new RPoint3();
