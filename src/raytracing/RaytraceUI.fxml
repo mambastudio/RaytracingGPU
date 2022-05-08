@@ -24,7 +24,6 @@
                   <HBox alignment="CENTER_LEFT" minHeight="-Infinity" minWidth="-Infinity" spacing="3.0">
                      <children>
                         <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#openOBJFile" text="Load OBJ" />
-                        <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#resetCameraToScene" text="Reset Camera" />
                         <Separator orientation="VERTICAL" prefHeight="0.0" prefWidth="7.0" />
                         <ComboBox fx:id="shadeTypeCombo" minHeight="-Infinity" minWidth="-Infinity" />
                      </children>
@@ -46,6 +45,18 @@
                               <VBox>
                                  <children>
                                     <TreeView fx:id="sceneMaterial" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS" />
+                                 </children>
+                                 <padding>
+                                    <Insets top="3.0" />
+                                 </padding>
+                              </VBox>
+                           </content>
+                        </Tab>
+                        <Tab text="Camera">
+                           <content>
+                              <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" prefHeight="200.0" prefWidth="100.0" spacing="5.0">
+                                 <children>
+                                    <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#resetCameraToScene" text="Reset Camera" />
                                  </children>
                                  <padding>
                                     <Insets top="3.0" />
