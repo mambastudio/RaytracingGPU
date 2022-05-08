@@ -165,7 +165,7 @@ public class RaytraceDevice implements RayDeviceInterface<
         fastShadeNormalsKernel              = configuration.createKernel("fastShadeNormals", isectBuffer, imageBuffer);
         fastShadeTextureUVKernel            = configuration.createKernel("fastShadeTextureUV", isectBuffer, imageBuffer);
         fastShadeMaterialKernel             = configuration.createKernel("fastShadeMaterial", isectBuffer, imageBuffer);
-        backgroundShadeKernel               = configuration.createKernel("backgroundShade", isectBuffer, cameraBuffer, imageBuffer, raysBuffer, envmap.getRgbCL(), envmap.getEnvMapSize());
+        backgroundShadeKernel               = configuration.createKernel("backgroundShade", isectBuffer, cameraBuffer, imageBuffer, raysBuffer, envmap.getRgbCL(), envmap.getEnvMapSizeCL());
         updateGroupbufferShadeImageKernel   = api.getConfigurationCL().createKernel("updateGroupbufferShadeImage", isectBuffer, cameraBuffer, groupBuffer);
         textureInitPassKernel               = configuration.createKernel("textureInitPassRT", bsdfBuffer, isectBuffer, texBuffer);
         setupBSDFRaytraceKernel             = configuration.createKernel("SetupBSDFRaytrace", isectBuffer, raysBuffer, bsdfBuffer, mesh.clMaterials());
@@ -409,6 +409,12 @@ public class RaytraceDevice implements RayDeviceInterface<
             //initiate pause
             raytraceThread.pauseExecution();       
         });      
+    }
+    
+    public void setEnvMapInKernel()
+    {
+        backgroundShadeKernel.putArg(4, envmap.getRgbCL());        
+        backgroundShadeKernel.putArg(5, envmap.getEnvMapSizeCL());
     }
     
     public void setShadeType(ShadeType shadeType)

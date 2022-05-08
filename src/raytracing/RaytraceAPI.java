@@ -10,7 +10,6 @@ import raytracing.display.BlendDisplay;
 import raytracing.device.RaytraceDevice;
 import bitmap.core.AbstractDisplay;
 import bitmap.image.BitmapRGBE;
-import coordinate.parser.attribute.MaterialT;
 
 import coordinate.parser.obj.OBJInfo;
 import coordinate.parser.obj.OBJMappedParser;
@@ -18,9 +17,6 @@ import coordinate.parser.obj.OBJParser;
 import coordinate.utility.Timer;
 import coordinate.utility.Value2Di;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import jfx.util.UtilityHandler;
 import org.jocl.CL;
 import raytracing.abstracts.RayAPI;
@@ -33,7 +29,6 @@ import raytracing.cl.RaytraceSource;
 import raytracing.geom.RPoint2;
 import raytracing.geom.RPoint3;
 import raytracing.geom.RVector3;
-import raytracing.fx.MaterialFX;
 import raytracing.mesh.RMesh;
 import raytracing.structs.RBound;
 import raytracing.structs.RConfig;
@@ -511,9 +506,7 @@ public class RaytraceAPI implements RayAPI<RaytraceUIController, RPoint3, RVecto
 
     @Override
     public void setEnvironmentMap(BitmapRGBE bitmap) {
-        envmap.setEnvironmentMap(bitmap);        
-        //deviceRaytrace.setEnvMapInKernel();               
-        deviceRaytrace.resume();
+        envmap.setEnvironmentMap(bitmap);         
     }
 
     public void setIsEnvmapPresent(boolean value)

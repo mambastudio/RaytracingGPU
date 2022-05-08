@@ -49,11 +49,13 @@ public class REnvMap {
         cenvlumsat = configuration.createFromF(FloatValue.class, sat.getSATArray(), READ_WRITE);  
         cenvmapSize.mapWriteMemory(envmapsize->{
             RInt3 esize = envmapsize.getCL();
-            esize.set(bitmap.getWidth(), bitmap.getHeight(), 1);
+            esize.set('x', bitmap.getWidth());
+            esize.set('y', bitmap.getHeight());
+            envmapsize.set(0, esize);
         });
     }
     
-    public CMemory<RInt3> getEnvMapSize()
+    public CMemory<RInt3> getEnvMapSizeCL()
     {
         return cenvmapSize;
     }
@@ -74,10 +76,11 @@ public class REnvMap {
     }
     
     public void setIsPresent(boolean isPresent)
-    {
+    {        
         cenvmapSize.mapWriteMemory(envmapsize->{
             RInt3 esize = envmapsize.getCL();
             esize.set('z', isPresent ? 1 : 0);
-        });
+            envmapsize.set(0, esize); //very important to transfer back to device
+        });        
     }    
 }

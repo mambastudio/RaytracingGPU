@@ -5,6 +5,8 @@
  */
 package raytracing;
 
+import bitmap.image.BitmapRGBE;
+import bitmap.reader.HDRBitmapReader;
 import raytracing.display.BlendDisplay;
 import raytracing.device.RaytraceDevice;
 
@@ -14,17 +16,21 @@ import coordinate.parser.obj.OBJInfo;
 import filesystem.core.file.FileObject;
 import filesystem.explorer.FileExplorer;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -41,6 +47,7 @@ import static raytracing.device.RaytraceDevice.ShadeType.MATERIAL_SHADE;
 import static raytracing.device.RaytraceDevice.ShadeType.NORMAL_SHADE;
 import static raytracing.device.RaytraceDevice.ShadeType.TEXTURE_SHADE;
 import raytracing.fx.MaterialFX;
+import raytracing.fx.dialog.EnvmapDialog;
 import raytracing.fx.dialog.FileChooser;
 import raytracing.fx.dialog.OBJSettingDialogFX;
 import raytracing.geom.RPoint3;
@@ -64,6 +71,8 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
     ComboBox<ShadeType> shadeTypeCombo;    
     @FXML
     TreeView<MaterialFX> sceneMaterial;
+    @FXML
+    CheckBox envmapOnCheckBox;
     
     
     private RaytraceAPI api;     
@@ -72,6 +81,11 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
     private FileChooser objChooser = null;
     
     private List<MaterialFX> matFXList;
+    
+    //env light dialog
+    private final EnvmapDialog explorerDialog = new EnvmapDialog(700, 500);
+    
+    private final ObjectProperty<BitmapRGBE> envBitmap = new SimpleObjectProperty<>();
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -111,6 +125,13 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
         //obj file chooser
         objChooser = new FileChooser();
         objChooser.addExtensions(new FileExplorer.ExtensionFilter("OBJ", ".obj"));
+        
+        //disable checkbox when application starts (no env by default)
+        envmapOnCheckBox.disableProperty().bind(envBitmap.isNull());
+        envmapOnCheckBox.selectedProperty().addListener((o, ov, nv)->{          
+            api.setIsEnvmapPresent(nv);
+            api.getDevice(RaytraceDevice.class).resume(api.getRayConfiguration());
+        });
     }    
 
     @Override
@@ -205,6 +226,22 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
             processDialog.showAndWait(UtilityHandler.getScene());
         }
         setupCurrentMaterialFX(); //load material to UI
+    }
+    
+    public void loadEnvMap(ActionEvent e)
+    {
+        
+        Optional<Path> path = explorerDialog.showAndWait(UtilityHandler.getScene());
+        HDRBitmapReader reader = new HDRBitmapReader();
+            
+        if(path.isPresent())
+        {
+            BitmapRGBE bitmapRGBE = reader.load(path.get());
+            envBitmap.set(bitmapRGBE);            
+            api.setEnvironmentMap(bitmapRGBE);
+            api.getDevice(RaytraceDevice.class).setEnvMapInKernel();
+            api.getDevice(RaytraceDevice.class).resume(api.getRayConfiguration());     
+        }
     }
     
     public void resetCameraToScene(ActionEvent e)

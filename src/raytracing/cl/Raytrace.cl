@@ -264,8 +264,8 @@ __kernel void backgroundShade(
     if(!isect->hit)
     {
        //update
-       if(envmapSize->z)    //is present
-       {             
+       if(envmapSize->z > 0)    //is present
+       {       
             int envIndex = getSphericalGridIndex(envmapSize->x, envmapSize->y, ray->d);
             float4 envColor = envmap[envIndex];
             gammaFloat4(&envColor, 2.2f);

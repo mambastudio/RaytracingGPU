@@ -20,6 +20,11 @@ public class RInt3 extends IntStruct implements AbstractCoordinateInteger
     {
         x = y = z = 0;
     }
+    
+    public RInt3(int x, int y, int z)
+    {
+        this.x = x; this.y = y; this.z = z;
+    }
 
     @Override
     public int get(char axis) {
@@ -90,5 +95,12 @@ public class RInt3 extends IntStruct implements AbstractCoordinateInteger
     @Override
     public int getByteSize() {
         return 4;
+    }
+    
+     @Override
+    public String toString()
+    {
+        int[] array = getArray();
+        return String.format("(%5d, %5d, %5d)", array[0], array[1], array[2]);
     }
 }

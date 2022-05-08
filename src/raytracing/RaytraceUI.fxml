@@ -2,10 +2,13 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
@@ -21,7 +24,6 @@
                   <HBox alignment="CENTER_LEFT" minHeight="-Infinity" minWidth="-Infinity" spacing="3.0">
                      <children>
                         <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#openOBJFile" text="Load OBJ" />
-                        <Button minWidth="-Infinity" mnemonicParsing="false" text="Load Environment" />
                         <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#resetCameraToScene" text="Reset Camera" />
                         <Separator orientation="VERTICAL" prefHeight="0.0" prefWidth="7.0" />
                         <ComboBox fx:id="shadeTypeCombo" minHeight="-Infinity" minWidth="-Infinity" />
@@ -35,18 +37,37 @@
             </VBox>
          </top>
          <center>
-            <SplitPane dividerPositions="0.2038369304556355" BorderPane.alignment="CENTER">
+            <SplitPane dividerPositions="0.22541966426858512" BorderPane.alignment="CENTER">
                <items>
-                  <VBox SplitPane.resizableWithParent="false">
-                     <children>
-                        <Label text="Scene Material" />
-                        <Separator prefWidth="200.0" />
-                        <TreeView fx:id="sceneMaterial" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS" />
-                     </children>
-                     <padding>
-                        <Insets top="3.0" />
-                     </padding>
-                  </VBox>
+                  <TabPane side="LEFT" tabClosingPolicy="UNAVAILABLE" SplitPane.resizableWithParent="false">
+                     <tabs>
+                        <Tab text="Material">
+                           <content>
+                              <VBox>
+                                 <children>
+                                    <TreeView fx:id="sceneMaterial" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS" />
+                                 </children>
+                                 <padding>
+                                    <Insets top="3.0" />
+                                 </padding>
+                              </VBox>
+                           </content>
+                        </Tab>
+                        <Tab text="Environment">
+                           <content>
+                              <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="5.0">
+                                 <children>
+                                    <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#loadEnvMap" text="Load Environment" />
+                                    <CheckBox fx:id="envmapOnCheckBox" mnemonicParsing="false" text="Environment On" />
+                                 </children>
+                                 <padding>
+                                    <Insets top="3.0" />
+                                 </padding>
+                              </VBox>
+                           </content>
+                        </Tab>
+                     </tabs>
+                  </TabPane>
                   <StackPane fx:id="viewportPane" prefHeight="150.0" prefWidth="200.0" />
                </items>
             </SplitPane>
