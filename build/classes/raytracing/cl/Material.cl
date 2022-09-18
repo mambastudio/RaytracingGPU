@@ -1,3 +1,4 @@
+#include <raytracing/cl/Bsdf.cl>
 
 typedef struct
 {     

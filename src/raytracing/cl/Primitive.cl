@@ -1,3 +1,4 @@
+#include <raytracing/cl/Util.cl>
 
 //moller ray-triangle intersection
 float fastTriangleIntersection(Ray r, float4 p1, float4 p2, float4 p3)

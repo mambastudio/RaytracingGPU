@@ -26,6 +26,7 @@ public class RaytraceSource {
         stringBuilder.append(CLFileReader.readFile(RaytraceSource.class, "Bsdf.cl"));
         stringBuilder.append(CLFileReader.readFile(RaytraceSource.class, "Material.cl"));
         stringBuilder.append(CLFileReader.readFile(RaytraceSource.class, "Raytrace.cl"));
+        stringBuilder.append(CLFileReader.readFile(RaytraceSource.class, "Initialise.cl"));
         return new String[]{stringBuilder.toString()};
     }
 }

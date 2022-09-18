@@ -14,8 +14,10 @@ import bitmap.image.BitmapRGBE;
 import coordinate.parser.obj.OBJInfo;
 import coordinate.parser.obj.OBJMappedParser;
 import coordinate.parser.obj.OBJParser;
+import coordinate.utility.Plugins;
 import coordinate.utility.Timer;
 import coordinate.utility.Value2Di;
+import java.io.File;
 import java.nio.file.Path;
 import jfx.util.UtilityHandler;
 import org.jocl.CL;
@@ -35,6 +37,7 @@ import raytracing.structs.RConfig;
 import raytracing.structs.RMaterial;
 import wrapper.core.CMemory;
 import wrapper.core.OpenCLConfiguration;
+import wrapper.util.CLOptions;
 
 /**
  *
@@ -52,9 +55,9 @@ public class RaytraceAPI implements RayAPI<RaytraceUIController, RPoint3, RVecto
     
     //Controller 
     private RaytraceUIController controllerImplementation = null;
-          
-    //ray casting device
-    private RaytraceDevice deviceRaytrace;
+   
+    //Add unique objects here base on class type
+    private final Plugins plugins = new Plugins();
     
     //device priority
     private RayDeviceType devicePriority = RAYTRACE;
@@ -81,7 +84,11 @@ public class RaytraceAPI implements RayAPI<RaytraceUIController, RPoint3, RVecto
     public void initOpenCLConfiguration() {
         if(configuration != null) 
             return;
-        configuration = OpenCLConfiguration.getDefault(RaytraceSource.readFiles());
+        CLOptions options = CLOptions.include("build/classes");
+        
+        System.out.println(new File("").getAbsolutePath());
+        
+        configuration = OpenCLConfiguration.getDefault(options, RaytraceSource.readFiles());
     }
 
     @Override
@@ -98,13 +105,12 @@ public class RaytraceAPI implements RayAPI<RaytraceUIController, RPoint3, RVecto
         this.initBitmap(ALL_RAYTRACE_IMAGE);
         
         //instantiate devices
-        deviceRaytrace = new RaytraceDevice(
+        plugins.addPluginClass(RaytraceDevice.class, new RaytraceDevice(
                 this.configRay.resolutionR.x, 
-                this.configRay.resolutionR.y);
+                this.configRay.resolutionR.y));
                 
         //init default mesh before api
-        initDefaultMesh();
-        
+        initDefaultMesh();        
         //setup ui materialfx after init default mesh
         controllerImplementation.setupCurrentMaterialFX();
         
@@ -112,10 +118,11 @@ public class RaytraceAPI implements RayAPI<RaytraceUIController, RPoint3, RVecto
         envmap = new REnvMap(configuration);
         
         //set api       
-        deviceRaytrace.setAPI(this);
+        //TODO: Investigate why not use setDevice (throws exception)
+        plugins.get(RaytraceDevice.class).setAPI(this);
         
         //start ray tracing
-        deviceRaytrace.start();
+        plugins.get(RaytraceDevice.class).start();
     }
     
     public RConfig getRayConfiguration()
@@ -172,7 +179,7 @@ public class RaytraceAPI implements RayAPI<RaytraceUIController, RPoint3, RVecto
     @Override
     public void render(RayDeviceType device) {
         if(device.equals(RAYTRACE))
-            deviceRaytrace.start();
+            plugins.get(RaytraceDevice.class).start();
     }
     
     @Override
@@ -211,10 +218,10 @@ public class RaytraceAPI implements RayAPI<RaytraceUIController, RPoint3, RVecto
            // UI.print("build-time", buildTime.toString());
 
             //set to device for rendering/raytracing
-            this.deviceRaytrace.set(mesh, bvhBuild);
+            plugins.get(RaytraceDevice.class).set(mesh, bvhBuild);
             
             //init kernels with new buffers to reflect on new model            
-            deviceRaytrace.initKernels();
+            plugins.get(RaytraceDevice.class).initKernels();
             
             //reposition camera
             this.repositionCameraToSceneRT();
@@ -403,7 +410,7 @@ public class RaytraceAPI implements RayAPI<RaytraceUIController, RPoint3, RVecto
         bvhBuild.build(mesh);  
         
         //set to device for rendering/raytracing
-        this.deviceRaytrace.set(mesh, bvhBuild);        
+        plugins.get(RaytraceDevice.class).set(mesh, bvhBuild);        
     }
     
     @Override
@@ -415,23 +422,23 @@ public class RaytraceAPI implements RayAPI<RaytraceUIController, RPoint3, RVecto
     @Override
     public void startDevice(RayDeviceType device) {
         if(device.equals(RAYTRACE))
-            this.deviceRaytrace.start();
+            plugins.get(RaytraceDevice.class).start();
         else
-            System.out.println("no device");
+            throw new UnsupportedOperationException("issue with device type which is not recognised");
     }
 
     @Override
     public void pauseDevice(RayDeviceType device) {
         if(device.equals(RAYTRACE))
-            this.deviceRaytrace.pause();
+            plugins.get(RaytraceDevice.class).pause();
         else
-            System.out.println("no device");
+            throw new UnsupportedOperationException("issue with device type which is not recognised");
     }
 
     @Override
     public void stopDevice(RayDeviceType device) {
         if(device.equals(RAYTRACE))
-            this.deviceRaytrace.stop();
+            plugins.get(RaytraceDevice.class).stop();
         else
             System.out.println("no device");
     }
@@ -439,7 +446,7 @@ public class RaytraceAPI implements RayAPI<RaytraceUIController, RPoint3, RVecto
     @Override
     public void resumeDevice(RayDeviceType device) {
         if(device.equals(RAYTRACE))
-            this.deviceRaytrace.resume();
+            plugins.get(RaytraceDevice.class).resume();
         else
             System.out.println("no device");
     }
@@ -448,7 +455,7 @@ public class RaytraceAPI implements RayAPI<RaytraceUIController, RPoint3, RVecto
     public boolean isDeviceRunning(RayDeviceType device) {
         switch (device) {
             case RAYTRACE:
-                return this.deviceRaytrace.isRunning();           
+                return plugins.get(RaytraceDevice.class).isRunning();           
             default:
                 throw new UnsupportedOperationException(device+ " not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
@@ -470,27 +477,14 @@ public class RaytraceAPI implements RayAPI<RaytraceUIController, RPoint3, RVecto
     }
 
     @Override
-    public RayDeviceInterface getDevice(RayDeviceType device) {
-        if(device.equals(RAYTRACE))
-            return deviceRaytrace;
-        return null;
+    public <Device extends RayDeviceInterface> Device getDevice(Class<Device> clazz){       
+        return plugins.get(clazz);       
     }
     
-    public <Device extends RayDeviceInterface> Device getDevice(Class<Device> deviceClass)
-    {
-        if(RaytraceDevice.class.isAssignableFrom(deviceClass))        
-            return (Device) deviceRaytrace;
-        else
-            throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     @Override
-    public void set(RayDeviceType device, RayDeviceInterface deviceImplementation) {
-        if(device.equals(RAYTRACE))
-        {
-            this.deviceRaytrace = (RaytraceDevice) deviceImplementation;
-            this.deviceRaytrace.setAPI(this);
-        }        
+    public <Device extends RayDeviceInterface> void setDevice(Class<Device> clazz, Device device) {        
+        plugins.addPluginClass(clazz, device);        
+        device.setAPI(this);               
     }
 
     @Override

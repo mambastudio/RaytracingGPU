@@ -116,8 +116,9 @@ public interface RayAPI <
     public RayDeviceType getDevicePriority();
     public boolean isDevicePriority(RayDeviceType device);
         
-    public RayDeviceInterface getDevice(RayDeviceType device);
-    public void set(RayDeviceType device, RayDeviceInterface deviceImplementation);
+    public <Device extends RayDeviceInterface> Device getDevice(Class<Device> clazz);
+    public <Device extends RayDeviceInterface> void setDevice(Class<Device> clazz, Device device);
+    
     public I getController(String controller);
     public void set(String controller, I controllerImplementation);
         

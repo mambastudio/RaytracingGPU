@@ -4,8 +4,6 @@
 #define MISS_MARKER 0
 #define EPS_COSINE 1e-6f
 #define EPS_RAY    1e-3f
-#define M_PI 3.14159265359f
-#define M_1_PI 1.f/M_PI
 #define NULL 0
 
 int getMaterial(int data)
@@ -192,7 +190,7 @@ typedef struct
 
 
 //http://jcgt.org/published/0006/01/01/
-//Frisvad’s orthonormal basis code
+//Frisvadï¿½s orthonormal basis code
 Frame get_frame(float4 n)
 {
    Frame frame;
@@ -853,15 +851,15 @@ __kernel void findBound(
         BoundingBox bounds = getBoundingBox(mesh, id);
 
         //Get face at id
-        global Face * face = faces + id;
+        global const Face * face = faces + id;
 
         //Get bound coordinates
-        global float* xmin = groupBound + 0;
-        global float* ymin = groupBound + 1;
-        global float* zmin = groupBound + 2;
-        global float* xmax = groupBound + 3;
-        global float* ymax = groupBound + 4;
-        global float* zmax = groupBound + 5;
+        global const float* xmin = groupBound + 0;
+        global const float* ymin = groupBound + 1;
+        global const float* zmin = groupBound + 2;
+        global const float* xmax = groupBound + 3;
+        global const float* ymax = groupBound + 4;
+        global const float* zmax = groupBound + 5;
     
     
         //update bounds

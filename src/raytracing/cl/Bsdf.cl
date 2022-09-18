@@ -1,3 +1,8 @@
+#include <raytracing/cl/Util.cl>
+#include <raytracing/cl/RGBSpace.cl>
+#include <raytracing/cl/Geometry.cl>
+#include <raytracing/cl/Sampling.cl>
+
 #define EPS_PHONG 1e-3f
 
 typedef struct
@@ -461,9 +466,9 @@ float4 EvaluateDiffuse(
      return (float4)(0);
      
    if(directPdfW)
-     *directPdfW += bsdf.probabilities.diffProb * fmax(0.f, localDirGen.z * M_1_PI);
+     *directPdfW += bsdf.probabilities.diffProb * fmax(0.f, localDirGen.z * (float)(M_1_PI));
      
-   return (float4)(bsdf.param.diffuse_color.xyz * M_1_PI, 1.f);
+   return (float4)(bsdf.param.diffuse_color.xyz * (float)(M_1_PI), 1.f);
 }
 
 float4 EvaluateGlossy(

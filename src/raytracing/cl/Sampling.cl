@@ -1,4 +1,3 @@
-#define PI 3.14159265358979323846f
 typedef struct
 {
    int2 seed;
@@ -41,10 +40,6 @@ float3 hashAndColor(int i) {
 	return (float3)(r, g, b);
 }
 
-int initRNG(global State2* state)
-{
-  
-}  
 
 //unique seed for each thread 
 //https://github.com/jbikker/lighthouse2/blob/master/lib/RenderCore_Optix7Filter/optix/.optix.cu

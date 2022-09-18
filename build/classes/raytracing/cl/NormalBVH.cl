@@ -1,3 +1,5 @@
+#include <raytracing/cl/Primitive.cl> 
+
 typedef struct
 {
    int bound;
