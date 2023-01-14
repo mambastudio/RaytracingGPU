@@ -5,14 +5,14 @@
  */
 package raytracing.structs;
 
-import coordinate.struct.structbyte.Structure;
+import coordinate.struct.structbyte.StructBufferMemory;
 import raytracing.geom.RPoint3;
 
 /**
  *
  * @author user
  */
-public class RBsdf extends Structure{
+public class RBsdf extends StructBufferMemory{
     public  RSurfaceParameter  param;     //chosen surface
 
     public  RFrame frame;                 //local frame of reference

@@ -6,7 +6,7 @@
 package raytracing.geom;
 
 import coordinate.generic.SCoord;
-import coordinate.struct.structfloat.FloatStruct;
+import coordinate.struct.structfloat.FloatStruct; 
 
 /**
  *

@@ -12,7 +12,7 @@ import coordinate.struct.structfloat.FloatStruct;
  *
  * @author user
  */
-public class RVector3 extends FloatStruct implements VCoord<RVector3>{
+public class RVector3 extends FloatStruct implements VCoord<RPoint3, RVector3>{
     public float x, y, z;
     
     public RVector3(){}

@@ -33,31 +33,31 @@ public class RCamera extends CameraDataAbstract {
     public void setPosition(RPoint3 position)
     {
         this.position = position;
-        this.refreshGlobalArray();
+        this.refreshGlobalBuffer();
     }
 
     public void setLookat(RPoint3 lookat)
     {
         this.lookat = lookat;
-        this.refreshGlobalArray();
+        this.refreshGlobalBuffer();
     }
 
     public void setUp(RVector3 up)
     {
         this.up = up;
-        this.refreshGlobalArray();
+        this.refreshGlobalBuffer();
     }
 
     public void setDimension(RPoint2 dimension)
     {
         this.dimension = dimension;
-        this.refreshGlobalArray();
+        this.refreshGlobalBuffer();
     }
 
     public void setFov(float fov)
     {
         this.fov = fov;
-        this.refreshGlobalArray();
+        this.refreshGlobalBuffer();
     }
     
     public boolean isSynched(RCamera cameraStruct)

@@ -11,6 +11,7 @@ import coordinate.generic.raytrace.AbstractPrimitive;
 import coordinate.list.CoordinateFloatList;
 import coordinate.list.IntList;
 import coordinate.parser.attribute.MaterialT;
+import coordinate.struct.cache.StructBufferCache;
 import raytracing.geom.RPoint2;
 import raytracing.geom.RPoint3;
 import raytracing.geom.RVector3;
@@ -164,16 +165,11 @@ public class RMesh extends AbstractMesh<RPoint3, RVector3, RPoint2> implements A
         normalsBuffer = configuration.createFromF(RVector3.class, getNormalArray(), READ_ONLY);
         facesBuffer = configuration.createFromI(RFace.class, getTriangleFacesArray(), READ_ONLY);
         sizeBuffer = configuration.createFromI(IntValue.class, new int[]{triangleSize()}, READ_ONLY);        
-        cmaterialsc = configuration.createBufferB(RMaterial.class, this.getMaterialList().size(), READ_WRITE); 
-        cmaterialsc.mapWriteIterator(materialArray -> {
-            int i = 0;
-            for(RMaterial cmat : materialArray)
-            {
-                cmat.setMaterial(new RMaterial()); //init array like any other opencl array
-                MaterialT mat = this.getMaterialList().get(i);   
-                cmat.setMaterialT(mat);                
-                i++;
-            }
+        cmaterialsc = configuration.createBufferB(RMaterial.class, StructBufferCache.class, this.getMaterialList().size(), READ_WRITE); 
+        cmaterialsc.loopWrite((cmat, index) -> {            
+            cmat.setMaterial(new RMaterial()); //init array like any other opencl array
+            MaterialT mat = this.getMaterialList().get(index);   
+            cmat.setMaterialT(mat);                
         });        
     }
         

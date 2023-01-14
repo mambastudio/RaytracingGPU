@@ -6,14 +6,14 @@
 package raytracing.structs;
 
 import coordinate.parser.attribute.MaterialT;
-import coordinate.struct.structbyte.Structure;
+import coordinate.struct.structbyte.StructBufferMemory;
 import raytracing.abstracts.RayMaterial;
 
 /**
  *
  * @author user
  */
-public class RMaterial extends Structure implements RayMaterial<RMaterial>  {
+public class RMaterial extends StructBufferMemory implements RayMaterial<RMaterial>  {
      //surface
     public RSurfaceParameter param; 
        
@@ -26,7 +26,7 @@ public class RMaterial extends Structure implements RayMaterial<RMaterial>  {
     public void setDiffuse(float r, float g, float b)
     {
         param.diffuse_color.set(r, g, b);
-        this.refreshGlobalArray();
+        this.refreshGlobalBuffer();
     }
     
     public void setEmitter(float r, float g, float b)
@@ -34,13 +34,13 @@ public class RMaterial extends Structure implements RayMaterial<RMaterial>  {
         param.emission_color.set(r, g, b);
         param.emission_param.set('x', 1);
         param.emission_param.set('y', 15);
-        this.refreshGlobalArray();
+        this.refreshGlobalBuffer();
     }
     
     @Override
     public void setMaterial(RMaterial mat) {
         param = mat.param.copy();       
-        this.refreshGlobalArray();
+        this.refreshGlobalBuffer();
     }
 
     @Override
@@ -60,6 +60,6 @@ public class RMaterial extends Structure implements RayMaterial<RMaterial>  {
         param.diffuse_color.set(mat.diffuse.r, mat.diffuse.g, mat.diffuse.b, mat.diffuse.w); 
         param.mirror_color.set(mat.reflection.r, mat.reflection.g, mat.reflection.b, mat.reflection.w); 
         param.emission_color.set(mat.emitter.r, mat.emitter.g, mat.emitter.b, mat.emitter.w);         
-        this.refreshGlobalArray();
+        this.refreshGlobalBuffer();
     }
 }

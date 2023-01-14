@@ -17,8 +17,8 @@ public class RaytraceSource {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(CLFileReader.readFile(RaytraceSource.class, "Print.cl"));
         stringBuilder.append(CLFileReader.readFile(RaytraceSource.class, "Util.cl"));
-        stringBuilder.append(CLFileReader.readFile(RaytraceSource.class, "Geometry.cl"));
         stringBuilder.append(CLFileReader.readFile(RaytraceSource.class, "Sampling.cl"));
+        stringBuilder.append(CLFileReader.readFile(RaytraceSource.class, "Geometry.cl"));        
         stringBuilder.append(CLFileReader.readFile(RaytraceSource.class, "RGBSpace.cl"));
         stringBuilder.append(CLFileReader.readFile(RaytraceSource.class, "Matrix.cl"));
         stringBuilder.append(CLFileReader.readFile(RaytraceSource.class, "Primitive.cl"));

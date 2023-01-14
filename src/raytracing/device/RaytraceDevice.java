@@ -9,6 +9,7 @@ package raytracing.device;
 import raytracing.accelerator.RNormalBVH;
 import bitmap.image.BitmapARGB;
 import coordinate.model.OrientationModel;
+import coordinate.struct.cache.StructBufferCache;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -60,7 +61,7 @@ public class RaytraceDevice implements RayDeviceInterface<
     BlendDisplay display;
     AtomicBoolean isRendering = new AtomicBoolean(false);
     
-    public enum ShadeType{COLOR_SHADE, NORMAL_SHADE, TEXTURE_SHADE, MATERIAL_SHADE};    
+    public enum ShadeType{COLOR_SHADE, NORMAL_SHADE, TEXTURE_SHADE, MATERIAL_SHADE, TRAVERSE_SHADE};    
     ShadeType shadeType = COLOR_SHADE;
     
     //API
@@ -104,6 +105,7 @@ public class RaytraceDevice implements RayDeviceInterface<
     CKernel fastShadeNormalsKernel = null;
     CKernel fastShadeTextureUVKernel = null;
     CKernel fastShadeMaterialKernel = null;
+    CKernel traverseShadeKernel = null;
     
     RTextureApplyPass texApplyPass = null;
     
@@ -143,14 +145,14 @@ public class RaytraceDevice implements RayDeviceInterface<
     
     public void initBuffers()
     {
-        raysBuffer          = configuration.createBufferB(RRay.class, maxGlobalSize, READ_WRITE);
-        cameraBuffer        = configuration.createBufferB(RCamera.class, 1, READ_WRITE);
+        raysBuffer          = configuration.createBufferB(RRay.class, StructBufferCache.class, maxGlobalSize, READ_WRITE);
+        cameraBuffer        = configuration.createBufferB(RCamera.class, StructBufferCache.class, 1, READ_WRITE);
         count               = configuration.createFromI(IntValue.class, new int[]{api.getRayConfiguration().getGlobalSize()}, READ_WRITE);
-        isectBuffer         = configuration.createBufferB(RIntersection.class, maxGlobalSize, READ_WRITE);
+        isectBuffer         = configuration.createBufferB(RIntersection.class, StructBufferCache.class, maxGlobalSize, READ_WRITE);
         imageBuffer         = configuration.createBufferI(IntValue.class, maxGlobalSize, READ_WRITE);        
         groupBuffer         = configuration.createBufferI(IntValue.class, maxGlobalSize, READ_WRITE);
         texBuffer           = configuration.createBufferI(RTextureData.class, maxGlobalSize, READ_WRITE);
-        bsdfBuffer          = configuration.createBufferB(RBsdf.class, maxGlobalSize, READ_WRITE);
+        bsdfBuffer          = configuration.createBufferB(RBsdf.class, StructBufferCache.class, maxGlobalSize, READ_WRITE);
         texApplyPass        = new RTextureApplyPass(api, texBuffer, count);
         
         groupIndex          = configuration.createBufferI(IntValue.class, 1, READ_WRITE);
@@ -165,6 +167,7 @@ public class RaytraceDevice implements RayDeviceInterface<
         fastShadeNormalsKernel              = configuration.createKernel("fastShadeNormals", isectBuffer, imageBuffer);
         fastShadeTextureUVKernel            = configuration.createKernel("fastShadeTextureUV", isectBuffer, imageBuffer);
         fastShadeMaterialKernel             = configuration.createKernel("fastShadeMaterial", isectBuffer, imageBuffer);
+        traverseShadeKernel                 = configuration.createKernel("traverseShade", isectBuffer, imageBuffer);
         backgroundShadeKernel               = configuration.createKernel("backgroundShade", isectBuffer, cameraBuffer, imageBuffer, raysBuffer, envmap.getRgbCL(), envmap.getEnvMapSizeCL());
         updateGroupbufferShadeImageKernel   = api.getConfigurationCL().createKernel("updateGroupbufferShadeImage", isectBuffer, cameraBuffer, groupBuffer);
         textureInitPassKernel               = configuration.createKernel("textureInitPassRT", bsdfBuffer, isectBuffer, texBuffer);
@@ -288,6 +291,9 @@ public class RaytraceDevice implements RayDeviceInterface<
                 break;  
             case MATERIAL_SHADE:
                 configuration.execute1DKernel(fastShadeMaterialKernel, configRay.getGlobalSize(), configRay.getLocalSize());
+                break; 
+            case TRAVERSE_SHADE:
+                configuration.execute1DKernel(traverseShadeKernel, configRay.getGlobalSize(), configRay.getLocalSize());
                 break; 
             default:
                 configuration.execute1DKernel(fastShadeKernel, configRay.getGlobalSize(), configRay.getLocalSize());

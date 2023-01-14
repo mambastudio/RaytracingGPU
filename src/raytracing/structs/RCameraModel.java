@@ -6,7 +6,7 @@
 package raytracing.structs;
 
 import coordinate.model.CameraModel;
-import coordinate.model.Transform;
+import coordinate.transform.Transform;
 import raytracing.geom.RPoint3;
 import raytracing.geom.RVector3;
 

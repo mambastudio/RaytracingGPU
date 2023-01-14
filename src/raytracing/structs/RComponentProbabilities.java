@@ -5,13 +5,14 @@
  */
 package raytracing.structs;
 
-import coordinate.struct.structbyte.Structure;
+import coordinate.struct.structbyte.StructBufferMemory;
+
 
 /**
  *
  * @author user
  */
-public class RComponentProbabilities extends Structure{
+public class RComponentProbabilities extends StructBufferMemory{
     public float diffProb;
     public float glossyProb;
     public float reflProb;

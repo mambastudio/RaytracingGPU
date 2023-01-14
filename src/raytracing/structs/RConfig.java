@@ -5,14 +5,14 @@
  */
 package raytracing.structs;
 
-import coordinate.struct.structbyte.Structure;
+import coordinate.struct.structbyte.StructBufferMemory;
 import raytracing.geom.RInt2;
 
 /**
  *
  * @author user
  */
-public class RConfig extends Structure{
+public class RConfig extends StructBufferMemory{
     public int      hasEnvironment;
     public RInt2    resolutionR; //divisible by 2^n and 64
     public RInt2    resolutionG;

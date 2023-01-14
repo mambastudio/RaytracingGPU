@@ -145,7 +145,8 @@ typedef struct
    float2 uv;
    int mat;
    int id;
-   int hit;  
+   int hit;
+   int traverseHit;
 }Intersection;
 
 enum LightType
@@ -490,6 +491,33 @@ float4 getFloat4ARGB(int argb)
    return fargb;
 }
 
+//heat map
+float4 gradient(float k) {
+    float3 g[] = {
+        (float3)(0, 0, 1),            //blue
+        (float3)(0, 1, 1),
+        (float3)(0, 0.50196f, 0),     //green
+        (float3)(1, 1, 0),
+        (float3)(1, 0, 0)             //red
+    };
+    int n = sizeof(g) / sizeof(g[0]);
+    float s = 1.0f / n;
+
+    int i = min(n - 1, (int)(k * n));
+    int j = min(n - 1, i + 1);
+
+    float t = (k - i * s) / s;
+    float3 c = (1.0f - t) * g[i] + t * g[j];
+
+    return (float4)(c.x, c.y, c.z, 1);
+}
+
+float4 gradient2(float k)
+{
+    //https://www.shadertoy.com/results?query=heatmap
+  
+}
+
 bool isFloat3Zero(float3 value)
 {
    union
@@ -580,6 +608,7 @@ void initGlobalRay(global Ray* ray, float4 position, float4 direction)
    ray->sign.x = ray->inv_d.x < 0 ? 1 : 0;
    ray->sign.y = ray->inv_d.y < 0 ? 1 : 0;
    ray->sign.z = ray->inv_d.z < 0 ? 1 : 0;
+   ray->extra.x = 0;
    ray->tMin = 0.001f;
    ray->tMax = INFINITY;
 }
@@ -593,6 +622,7 @@ void initGlobalRayT(global Ray* ray, float4 position, float4 direction, float tM
    ray->sign.x = ray->inv_d.x < 0 ? 1 : 0;
    ray->sign.y = ray->inv_d.y < 0 ? 1 : 0;
    ray->sign.z = ray->inv_d.z < 0 ? 1 : 0;
+   ray->extra.x = 0;
    ray->tMin = 0.0001f;
    ray->tMax = tMax;
 }
@@ -606,6 +636,7 @@ void initRay(Ray* ray, float4 position, float4 direction)
    ray->sign.x = ray->inv_d.x < 0 ? 1 : 0;
    ray->sign.y = ray->inv_d.y < 0 ? 1 : 0;
    ray->sign.z = ray->inv_d.z < 0 ? 1 : 0;
+   ray->extra.x = 0;
    ray->tMin = 0.0001f;
    ray->tMax = INFINITY;
 }
@@ -696,7 +727,7 @@ bool intersectBound(Ray r, BoundingBox bound)
         tmin = tzmin;
     if (tzmax < tmax)
         tmax = tzmax;
-    tmax *= 1.00000024f;
+    tmax *= 1.0000000024f;
     return ((tmin < r.tMax) && (tmax > r.tMin));
    //float tmax
 }
@@ -722,7 +753,7 @@ bool intersectBoundT(Ray r, BoundingBox bound, float* t)
         tmin = tzmin;
     if (tzmax < tmax)
         tmax = tzmax;
-    tmax *= 1.00000024f;
+    tmax *= 1.0000000024f;
     t[0] = tmin;
     t[1] = tmax;
     return ((tmin < r.tMax) && (tmax > r.tMin));

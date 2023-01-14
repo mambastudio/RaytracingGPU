@@ -6,7 +6,7 @@
 package raytracing.structs;
 
 import coordinate.generic.AbstractRay;
-import coordinate.struct.structbyte.Structure;
+import coordinate.struct.structbyte.StructBufferMemory;
 import raytracing.geom.RInt2;
 import raytracing.geom.RInt4;
 import raytracing.geom.RPoint3;
@@ -16,7 +16,7 @@ import raytracing.geom.RVector3;
  *
  * @author user
  */
-public class RRay extends Structure implements AbstractRay<RPoint3, RVector3>
+public class RRay extends StructBufferMemory implements AbstractRay<RPoint3, RVector3>
 {
     public RPoint3  o;
     public RVector3 d;    
@@ -45,7 +45,7 @@ public class RRay extends Structure implements AbstractRay<RPoint3, RVector3>
         sign.set(1, inv_d.get(1) < 0 ? 1 : 0);
         sign.set(2, inv_d.get(2) < 0 ? 1 : 0);
         
-        this.refreshGlobalArray();
+        this.refreshGlobalBuffer();
     }
     
     public int[] dirIsNeg()
@@ -54,6 +54,7 @@ public class RRay extends Structure implements AbstractRay<RPoint3, RVector3>
         return dirIsNeg;
     }
     
+    @Override
     public final boolean isInside(float t) 
     {
         return (tMin < t) && (t < tMax);

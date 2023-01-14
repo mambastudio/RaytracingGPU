@@ -1,5 +1,3 @@
-#include <raytracing/cl/Bsdf.cl>
-
 typedef struct
 {     
    int4 diffuseTexture;       //x, y-coord, argb, has-texture(if(w >= 0) ? materialID : false)  //actual texture color

@@ -1,5 +1,3 @@
-#include <raytracing/cl/Material.cl>
-
 
 // this is where you select the required bsdf, portal for filtering later
 __kernel void SetupBSDFRaytrace(global Intersection* isects,
@@ -138,8 +136,30 @@ __kernel void fastShade(
     {
         float coeff = bsdf->localDirFix.z;
         color.xyz   = getQuickSurfaceColor(param, coeff).xyz;
-        imageBuffer[id] = getIntARGB(color);
     }
+    
+    imageBuffer[id] = getIntARGB(color);
+}
+
+//the heatmap
+__kernel void traverseShade(
+    global Intersection* isects,
+    global int*          imageBuffer
+)
+{
+    //get thread id
+    int id = get_global_id( 0 );
+    
+    //get intersect
+    global Intersection* isect = isects + id;
+
+    //gradient color
+    float4 c = gradient(min(100, isect->traverseHit) / 100.0f);
+    
+    //default color
+    float4 color = (float4)(c.xyz, 1);
+    //apply color
+    imageBuffer[id] = getIntARGB(color);
 }
 
 __kernel void fastShadeNormals(

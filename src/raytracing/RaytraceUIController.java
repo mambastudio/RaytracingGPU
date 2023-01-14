@@ -46,6 +46,7 @@ import static raytracing.device.RaytraceDevice.ShadeType.COLOR_SHADE;
 import static raytracing.device.RaytraceDevice.ShadeType.MATERIAL_SHADE;
 import static raytracing.device.RaytraceDevice.ShadeType.NORMAL_SHADE;
 import static raytracing.device.RaytraceDevice.ShadeType.TEXTURE_SHADE;
+import static raytracing.device.RaytraceDevice.ShadeType.TRAVERSE_SHADE;
 import raytracing.fx.MaterialFX;
 import raytracing.fx.dialog.EnvmapDialog;
 import raytracing.fx.dialog.FileChooser;
@@ -98,6 +99,7 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
         shadeTypeCombo.getItems().add(NORMAL_SHADE);
         shadeTypeCombo.getItems().add(TEXTURE_SHADE);
         shadeTypeCombo.getItems().add(MATERIAL_SHADE);
+        shadeTypeCombo.getItems().add(TRAVERSE_SHADE);
         shadeTypeCombo.getSelectionModel().select(COLOR_SHADE);
         
         shadeTypeCombo.setOnAction(event->{           
@@ -115,6 +117,9 @@ public class RaytraceUIController implements Initializable, RayControllerInterfa
                     break;
                 case MATERIAL_SHADE:
                     api.getDevice(RaytraceDevice.class).setShadeType(MATERIAL_SHADE);
+                    break;
+                case TRAVERSE_SHADE:
+                    api.getDevice(RaytraceDevice.class).setShadeType(TRAVERSE_SHADE);
                     break;
                 default:
                     break;

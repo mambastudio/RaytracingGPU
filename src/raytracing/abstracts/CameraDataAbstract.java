@@ -5,13 +5,14 @@
  */
 package raytracing.abstracts;
 
-import coordinate.struct.structbyte.Structure;
+import coordinate.struct.structbyte.StructBufferMemory;
+
 
 
 /**
  *
  * @author user
  */
-public abstract class CameraDataAbstract extends Structure{
+public abstract class CameraDataAbstract extends StructBufferMemory{
     
 }

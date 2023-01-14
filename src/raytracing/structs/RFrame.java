@@ -5,14 +5,14 @@
  */
 package raytracing.structs;
 
-import coordinate.struct.structbyte.Structure;
+import coordinate.struct.structbyte.StructBufferMemory;
 import raytracing.geom.RPoint3;
 
 /**
  *
  * @author user
  */
-public class RFrame extends Structure{
+public class RFrame extends StructBufferMemory{
     public RPoint3 mX;
     public RPoint3 mY;
     public RPoint3 mZ;

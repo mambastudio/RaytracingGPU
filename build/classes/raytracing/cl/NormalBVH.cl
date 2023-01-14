@@ -1,5 +1,3 @@
-#include <raytracing/cl/Primitive.cl> 
-
 typedef struct
 {
    int bound;
@@ -13,7 +11,7 @@ typedef struct
 }BVHNode;
 
 
-bool intersectMesh(global Ray* ray, int* childIndex, TriangleMesh mesh, global BVHNode* nodes, global BoundingBox* bounds, bool bailout)
+bool intersectMesh(global Ray* ray, int* childIndex, TriangleMesh mesh, global BVHNode* nodes, global BoundingBox* bounds, int* traversalHit, bool bailout)
 {
      //BVH Accelerator
      bool hit = false;
@@ -36,21 +34,23 @@ bool intersectMesh(global Ray* ray, int* childIndex, TriangleMesh mesh, global B
             float leftT[2];
             float rightT[2];
             bool leftHit        = intersectBoundT(*ray, bounds[left.bound], leftT);
-            bool rightHit       = intersectBoundT(*ray, bounds[right.bound], rightT);
+            bool rightHit       = intersectBoundT(*ray, bounds[right.bound], rightT);    
 
             if(!leftHit && !rightHit)
                  break;
-              
+
             bitstack <<= 1; //push 0 bit into bitstack to skip the sibling later
                   
             if(leftHit && rightHit)
             {
                 nodeId = (rightT[0] < leftT[0]) ? node.right : node.left;
                 bitstack |= 1; //change skip code to 1 to traverse the sibling later
+                *traversalHit += 2;
             }
             else
             {
-                nodeId = leftHit ? node.left : node.right;                   
+                nodeId = leftHit ? node.left : node.right;
+                *traversalHit += 1;
             }
         }
 
@@ -63,12 +63,10 @@ bool intersectMesh(global Ray* ray, int* childIndex, TriangleMesh mesh, global B
             float4 p3 = getP3(mesh, node.child);
             
             float t = fastTriangleIntersection(*ray, p1, p2, p3);
-            
             if(isInside(*ray, t))
             {
                 if(bailout)
                    return true;
-
                 hit = true;
                 ray->tMax = t;
                 *childIndex = node.child;
@@ -119,10 +117,14 @@ __kernel void IntersectPrimitives(
     global Intersection* isect = isects + id;
     TriangleMesh mesh = {points, uvs, normals, faces, size[0]};
     
+    //for bound intersection counter during traversal
+    int traversalHit = 0;
+
     if(id < *count)
     {
       //intersect
-      bool hit = intersectMesh(ray, &childIndex, mesh, nodes, bounds, false);
+      bool hit = intersectMesh(ray, &childIndex, mesh, nodes, bounds, &traversalHit, false);
+      isect->traverseHit = traversalHit;
       if(hit)
       {
           float4 p1 = getP1(mesh, childIndex);
@@ -343,8 +345,11 @@ __kernel void intersectOcclusion(
     global Ray* ray = rays + id;
     global int* hit = hits + id;
     TriangleMesh mesh = {points, uvs, normals, faces, size[0]};
+    
+    //for bound intersection counter during traversal
+    int traversalHit = 0;
 
     if(id < *count)
       //intersect
-      *hit = intersectMesh(ray, &childIndex, mesh, nodes, bounds, true);
+      *hit = intersectMesh(ray, &childIndex, mesh, nodes, bounds, &traversalHit, true);
 }

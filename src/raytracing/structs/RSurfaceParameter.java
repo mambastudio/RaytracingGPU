@@ -5,7 +5,7 @@
  */
 package raytracing.structs;
 
-import coordinate.struct.structbyte.Structure;
+import coordinate.struct.structbyte.StructBufferMemory;
 import raytracing.geom.RColor4;
 import raytracing.geom.RPoint3;
 
@@ -13,7 +13,7 @@ import raytracing.geom.RPoint3;
  *
  * @author user
  */
-public class RSurfaceParameter extends Structure {
+public class RSurfaceParameter extends StructBufferMemory {
     //this surface is done by texture
     public boolean          isDiffuseTexture;
     public boolean          isGlossyTexture;

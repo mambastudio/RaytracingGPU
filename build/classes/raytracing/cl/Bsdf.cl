@@ -1,8 +1,3 @@
-#include <raytracing/cl/Util.cl>
-#include <raytracing/cl/RGBSpace.cl>
-#include <raytracing/cl/Geometry.cl>
-#include <raytracing/cl/Sampling.cl>
-
 #define EPS_PHONG 1e-3f
 
 typedef struct

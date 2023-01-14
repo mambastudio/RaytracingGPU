@@ -1,6 +1,3 @@
-#include <raytracing/cl/Util.cl>
-#include <raytracing/cl/Matrix.cl>
-
 __kernel void InitCameraRayData(
     global CameraStruct* camera,
     global Ray* rays)
