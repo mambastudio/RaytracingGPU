@@ -12,8 +12,10 @@ import bitmap.image.BitmapARGB;
 import bitmap.image.BitmapRGBE;
 import coordinate.generic.AbstractCoordinateFloat;
 import coordinate.generic.AbstractMesh;
+import coordinate.generic.AbstractRay;
 import coordinate.generic.SCoord;
 import coordinate.generic.VCoord;
+import coordinate.shapes.TriangleShape;
 import coordinate.utility.Value2Di;
 import java.net.URI;
 import java.nio.file.Path;
@@ -31,12 +33,16 @@ import wrapper.core.OpenCLConfiguration;
  * @param <P>
  * @param <N>
  * @param <T>
+ * @param <R>
+ * @param <TriShape>
  */
 public interface RayAPI <
         I extends RayControllerInterface,
         P extends SCoord, 
         N extends VCoord, 
-        T extends AbstractCoordinateFloat>
+        T extends AbstractCoordinateFloat,
+        R extends AbstractRay<P, N>,
+        TriShape extends TriangleShape<P, N, R>>
 {
     enum ImageType{
         RAYTRACE_IMAGE, 
@@ -104,7 +110,7 @@ public interface RayAPI <
     public default void initMesh(URI uri)    {initMesh(Paths.get(uri));}       
     public default void initDefaultMesh(){}
     public void initMesh(Path path);
-    public AbstractMesh<P, N, T> getCurrentMesh();
+    public AbstractMesh<P, N, T, R, TriShape> getCurrentMesh();
     
     public void startDevice(RayDeviceType device);
     public void pauseDevice(RayDeviceType device);

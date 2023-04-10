@@ -30,7 +30,7 @@ import wrapper.core.memory.values.IntValue;
  *
  * @author user
  */
-public class RMesh extends AbstractMesh<RPoint3, RVector3, RPoint2> implements AbstractPrimitive
+public class RMesh extends AbstractMesh<RPoint3, RVector3, RPoint2, RRay, RTriangle> implements AbstractPrimitive
         <RPoint3,         
          RRay, 
          RIntersection, 
@@ -213,6 +213,11 @@ public class RMesh extends AbstractMesh<RPoint3, RVector3, RPoint2> implements A
     public RMaterial getMaterial(int index)
     {
         return cmaterialsc.get(index);
+    }
+
+    @Override
+    public RTriangle getTriangle(int index) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
    
 }

@@ -32,9 +32,11 @@ import raytracing.geom.RPoint2;
 import raytracing.geom.RPoint3;
 import raytracing.geom.RVector3;
 import raytracing.mesh.RMesh;
+import raytracing.mesh.RTriangle;
 import raytracing.structs.RBound;
 import raytracing.structs.RConfig;
 import raytracing.structs.RMaterial;
+import raytracing.structs.RRay;
 import wrapper.core.CMemory;
 import wrapper.core.OpenCLConfiguration;
 import wrapper.util.CLOptions;
@@ -46,7 +48,7 @@ import wrapper.util.CLOptions;
  * Class to link between raydevice, ui and any other frameworks e.g. I/O
  * 
  */
-public class RaytraceAPI implements RayAPI<RaytraceUIController, RPoint3, RVector3, RPoint2>{
+public class RaytraceAPI implements RayAPI<RaytraceUIController, RPoint3, RVector3, RPoint2, RRay, RTriangle>{
     //Opencl configuration for running single ray tracing program 
     private OpenCLConfiguration configuration = null;
     
