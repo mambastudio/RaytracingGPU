@@ -24,17 +24,17 @@ public class RTriangle extends TriangleShape<RPoint3, RVector3, RRay>  {
 
     @Override
     public RVector3 e1() {
-        return RPoint3.sub(p1, p2);
+        return RPoint3.sub(pp1, pp2);
     }
 
     @Override
     public RVector3 e2() {
-        return RPoint3.sub(p3, p1);
+        return RPoint3.sub(pp3, pp1);
     }
     
     public RPoint3 v0()
     {
-        return p1;
+        return pp1;
     }
     
     public float nx()
@@ -58,7 +58,7 @@ public class RTriangle extends TriangleShape<RPoint3, RVector3, RRay>  {
     public RBound getBound()
     {
         RBound b = new RBound();
-        b.include(p1, p2, p3);
+        b.include(pp1, pp2, pp3);
         return b;
     }
 }

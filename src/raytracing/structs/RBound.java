@@ -52,7 +52,7 @@ public class RBound extends FloatStruct implements AbstractBound<RPoint3, RVecto
     
     
     @Override
-    public final void include(RPoint3 p) {
+    public final RBound include(RPoint3 p) {
         if (p != null) {
             if (p.x < minimum.get(0))
                 minimum.set('x', p.x);
@@ -68,6 +68,7 @@ public class RBound extends FloatStruct implements AbstractBound<RPoint3, RVecto
                 maximum.set('z', p.z);
         }
         this.refreshGlobalArray();
+        return this;
     }
 
     @Override
