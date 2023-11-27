@@ -5,6 +5,7 @@
  */
 package test;
 
+import java.util.Arrays;
 import raytracing.cl.RaytraceSource;
 import wrapper.core.OpenCLConfiguration;
 
@@ -16,5 +17,8 @@ public class TestCL {
     public static void main(String... args)
     {
         OpenCLConfiguration configuration = OpenCLConfiguration.getDefault(RaytraceSource.readFiles());
+        String str = "1/1/1";
+        System.out.println(Arrays.toString(str.split("[/\\s]+")));
+        System.out.println(str.matches("-?\\d+(\\.\\d+)?"));
     }
 }
